@@ -17,6 +17,21 @@ Twelve earlier iterations failed by piling on complexity until the system collap
 - **Don't chase test cases.** When a result looks wrong, check the label first, then the brief's wording, and change the prompt only for a general reason. Accuracy is measured by the eval against the reviewed reference set, not by a growing suite of individual cases.
 - **Fast and cheap.** Classification runs at scale; keep cost per company low and say what a change does to cost.
 
+## Commands
+
+```
+uv sync                                   # install
+uv run pytest                             # small unit tests
+uv run signal sanitize docs/sample_pac_companies.csv
+uv run signal classify <url> --market <market_id>
+uv run signal review --market <market_id>   # sample + screen -> eval/review_<market_id>.csv
+uv run signal freeze --market <market_id>   # reviewed sheet -> data/reference_labels.json
+uv run signal eval --market <market_id>     # accuracy against the reference set
+uv run signal schema                        # after editing the Market model in src/signal_core/markets.py
+```
+
+Company websites, Serper, and the Anthropic API must be reachable, and keys must be in `.env`. Cloud sessions without that network access can run the unit tests only; run the commands on Tim's machine.
+
 ## Secrets
 
 `ANTHROPIC_API_KEY` and `SERPER_API_KEY` live in a local `.env`, which is git-ignored. Never commit `.env` or any key.

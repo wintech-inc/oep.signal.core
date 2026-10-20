@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "EndProduct": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Singular name of the end product, e.g. 'commercial poultry house'.",
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "terms": {
+          "description": "Search terms for the end product.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Terms",
+          "type": "array"
+        },
+        "not_included": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Not Included",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "terms"
+      ],
+      "title": "EndProduct",
+      "type": "object"
+    },
+    "Example": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "rule": {
+          "description": "Rule(s) that make it IN: A, B, C, or a combination.",
+          "title": "Rule",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "url",
+        "rule"
+      ],
+      "title": "Example",
+      "type": "object"
+    },
+    "Geography": {
+      "additionalProperties": false,
+      "properties": {
+        "countries": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Countries",
+          "type": "array"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "priority_states": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Priority States",
+          "type": "array"
+        }
+      },
+      "required": [
+        "countries",
+        "note",
+        "priority_states"
+      ],
+      "title": "Geography",
+      "type": "object"
+    },
+    "OurProducts": {
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "description": "What the supplier makes for this end product.",
+          "title": "Summary",
+          "type": "string"
+        },
+        "category": {
+          "description": "Product category for rule C, e.g. 'doors or windows'.",
+          "title": "Category",
+          "type": "string"
+        },
+        "terms": {
+          "description": "Search terms for products like ours.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary",
+        "category"
+      ],
+      "title": "OurProducts",
+      "type": "object"
+    },
+    "PacProduct": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Url"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "url"
+      ],
+      "title": "PacProduct",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[a-z0-9_]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "supplier": {
+      "title": "Supplier",
+      "type": "string"
+    },
+    "crm_market": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The CRM's market name for this brief (eval only).",
+      "title": "Crm Market"
+    },
+    "end_product": {
+      "$ref": "#/$defs/EndProduct"
+    },
+    "our_products": {
+      "$ref": "#/$defs/OurProducts"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
+    "examples_in": {
+      "items": {
+        "$ref": "#/$defs/Example"
+      },
+      "title": "Examples In",
+      "type": "array"
+    },
+    "pac_products": {
+      "items": {
+        "$ref": "#/$defs/PacProduct"
+      },
+      "title": "Pac Products",
+      "type": "array"
+    },
+    "geography": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Geography"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "supplier",
+    "end_product",
+    "our_products"
+  ],
+  "title": "Market",
+  "type": "object"
+}
