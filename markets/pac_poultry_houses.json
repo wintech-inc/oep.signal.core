@@ -1,0 +1,81 @@
+{
+  "id": "pac_poultry_houses",
+  "name": "Poultry Houses",
+  "supplier": "Pocahontas Aluminum (PAC)",
+  "crm_market": "Poultry",
+  "end_product": {
+    "name": "commercial poultry house",
+    "description": "A long, enclosed, ventilated building used to raise chickens or turkeys commercially. Includes broiler, breeder, pullet, layer, and turkey houses.",
+    "terms": [
+      "poultry house",
+      "broiler house",
+      "breeder house",
+      "pullet house",
+      "layer house",
+      "turkey house",
+      "chicken house",
+      "poultry barn"
+    ],
+    "not_included": [
+      "Backyard, hobby, or mobile chicken coops.",
+      "General agricultural buildings (pole barns, equestrian barns, dairy or hog barns, machine sheds, storage) unless the company shows it builds poultry houses."
+    ]
+  },
+  "our_products": {
+    "summary": "aluminum-framed, fiberglass-paneled doors and vinyl windows for poultry houses",
+    "category": "doors or windows",
+    "terms": [
+      "tunnel door",
+      "wind tunnel door",
+      "bi-fold door",
+      "let-out door",
+      "turn-out door",
+      "butterfly door",
+      "roll-up door",
+      "roll seal door",
+      "cool-cell door",
+      "walk-in door",
+      "entry door",
+      "attic door",
+      "vinyl window",
+      "hung window"
+    ]
+  },
+  "notes": [
+    "Makers of agricultural doors or windows that can be used in poultry houses (for example walk-in doors) are IN under rule C, even if they are not marketed only for poultry.",
+    "Large equipment makers that offer poultry house doors among many other products are IN under rule C.",
+    "Makers of other poultry house equipment (feeders, drinkers, fans, heaters, lighting, controllers, cooling pads, curtains, inlets) are OUT unless they also build houses, distribute house equipment, or make doors or windows.",
+    "Poultry supply stores and poultry equipment dealers are IN under rule B.",
+    "General building-materials distributors and lumber yards are OUT unless they show a poultry or agricultural program.",
+    "Poultry growers and integrators that own or operate poultry houses are OUT.",
+    "Feed, animal health, hatcheries, processing plants, egg brands, staffing, and the sale, financing, or insurance of poultry farms are OUT."
+  ],
+  "examples_in": [
+    {"name": "Southern Poultry Solutions", "url": "https://southernpoultrysolutions.com", "rule": "B"},
+    {"name": "Reliable Poultry Supply", "url": "https://www.reliablepoultry.com", "rule": "B"},
+    {"name": "QC Supply", "url": "https://www.qcsupply.com", "rule": "B"},
+    {"name": "Hostetler (H3 Poultry)", "url": "https://h3poultry.com", "rule": "A"},
+    {"name": "Southern Ag Builders", "url": "https://southernagbuilders.com", "rule": "A"},
+    {"name": "Hog Slat", "url": "https://www.hogslat.com", "rule": "A, B and C"},
+    {"name": "L.B. White", "url": "https://www.lbwhite.com", "rule": "C"},
+    {"name": "Eagan Manufacturing", "url": "https://eaganmfg.com", "rule": "C"},
+    {"name": "Chore-Time", "url": "https://www.choretime.com", "rule": "C"},
+    {"name": "Double L Group", "url": "https://www.doublel.com", "rule": "C"},
+    {"name": "Plyco", "url": "https://www.plyco.com", "rule": "C"}
+  ],
+  "pac_products": [
+    {"name": "V21", "description": "vinyl window", "url": "https://www.pocahontasaluminum.com/windows-vinyl.php"},
+    {"name": "Delta door", "description": "aluminum frame, fiberglass panels", "url": "https://www.pocahontasaluminum.com/doors-delta.php"},
+    {"name": "300 series door", "description": "aluminum frame, fiberglass panels", "url": "https://www.pocahontasaluminum.com/doors-300.php"},
+    {"name": "Bi-fold door", "description": "aluminum frame, fiberglass panels", "url": null},
+    {"name": "Let-out door", "description": "aluminum frame, fiberglass panels", "url": null},
+    {"name": "Wind tunnel door", "description": "aluminum frame, fiberglass panels", "url": null},
+    {"name": "Entry door", "description": "aluminum frame, fiberglass panels", "url": null},
+    {"name": "Attic door", "description": "aluminum frame, fiberglass panels; in development", "url": null}
+  ],
+  "geography": {
+    "countries": ["US"],
+    "note": "Contiguous United States only.",
+    "priority_states": ["AL", "AR", "GA", "KY", "MS", "MO", "OK", "TN", "TX"]
+  }
+}

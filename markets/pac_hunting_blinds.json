@@ -1,0 +1,69 @@
+{
+  "id": "pac_hunting_blinds",
+  "name": "Hunting Blinds",
+  "supplier": "Pocahontas Aluminum (PAC)",
+  "crm_market": "Hunting Blinds",
+  "end_product": {
+    "name": "hard-sided hunting blind",
+    "description": "An enclosed, hard-sided structure that hunters sit in to stay hidden from game, usually with windows and a door. Includes box blinds, elevated or tower blinds, tripod blinds, ground box blinds, and shooting houses, made of fiberglass, plastic, wood, or metal.",
+    "terms": [
+      "hunting blind",
+      "deer blind",
+      "box blind",
+      "tower blind",
+      "elevated blind",
+      "tripod blind",
+      "ground blind",
+      "pit blind",
+      "shooting house"
+    ],
+    "not_included": [
+      "Soft-sided, fabric, pop-up, and waterfowl or layout blinds (they do not use windows).",
+      "Open tree stands, ladder stands, and stands without an enclosure.",
+      "General sheds, cabins, or agricultural buildings unless the company shows it builds hunting blinds."
+    ]
+  },
+  "our_products": {
+    "summary": "aluminum and vinyl windows and aluminum-framed doors for hunting blinds",
+    "category": "windows or doors",
+    "terms": [
+      "hunting blind window",
+      "deer blind window",
+      "shooting window",
+      "sliding window",
+      "hung window",
+      "vinyl window",
+      "aluminum window",
+      "blind door",
+      "aluminum door"
+    ]
+  },
+  "notes": [
+    "Shed, cabin, and outdoor-structure builders that list hunting blinds among their products are IN under rule A.",
+    "Dealers and retailers that only resell finished blinds are OUT.",
+    "Other hunting products (feeders, stands, trail cameras, apparel, firearms, optics, decoys) are OUT.",
+    "Outfitters, ranches, hunting preserves, and blind rental companies are OUT."
+  ],
+  "examples_in": [
+    {"name": "Ranch King", "url": "https://www.ranchkingblinds.com", "rule": "A"},
+    {"name": "The Antler Shed", "url": "https://theantlersheddeerblinds.com", "rule": "A"},
+    {"name": "Boss Game Systems", "url": "https://bossgamesystems.com", "rule": "A"},
+    {"name": "Atascosa Wildlife Supply", "url": "https://awsblinds.com", "rule": "A"},
+    {"name": "The Original Deer Blind Window Company", "url": "https://thedeerblindwindow.com", "rule": "C"},
+    {"name": "Deerview Windows", "url": "https://deerviewwindows.com", "rule": "C"},
+    {"name": "Kudu Outdoor Products", "url": "https://www.facebook.com/KuduOutdoorProducts/", "rule": "C"},
+    {"name": "Elusive Wildlife", "url": "https://elusivewildlife.com/collections/hunting-blind-windows", "rule": "C"}
+  ],
+  "pac_products": [
+    {"name": "V21", "description": "vinyl window", "url": "https://www.pocahontasaluminum.com/windows-vinyl.php"},
+    {"name": "100VS", "description": "aluminum window", "url": "https://www.pocahontasaluminum.com/windows-aluminum.php"},
+    {"name": "100HS", "description": "aluminum window", "url": "https://www.pocahontasaluminum.com/windows-aluminum.php"},
+    {"name": "Delta door", "description": "aluminum frame, fiberglass panels", "url": "https://www.pocahontasaluminum.com/doors-delta.php"},
+    {"name": "300 series door", "description": "aluminum frame, fiberglass panels", "url": "https://www.pocahontasaluminum.com/doors-300.php"}
+  ],
+  "geography": {
+    "countries": ["US"],
+    "note": "Contiguous United States only. Texas and the Midwest have the highest concentration.",
+    "priority_states": []
+  }
+}

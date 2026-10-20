@@ -1,0 +1,22 @@
+# CLAUDE.md
+
+SIGNAL (Sales Intelligence Graph for Networked Accounts and Leads) is a market intelligence tool for OEP's companies, WinTech and Pocahontas Aluminum (PAC). Read [docs/project_overview.md](docs/project_overview.md) first, then the plan for the current milestone in [docs/milestones/](docs/milestones/).
+
+## How work is organized
+
+- Branch `version-13.0` is the integration branch for iteration 13. Each milestone (M1, M2, ...) ends with a PR into it.
+- Each milestone has a written plan in `docs/milestones/`. Implement the plan; if it needs to change, raise it with Tim rather than drifting from it.
+
+## Principles (these matter more than anything else here)
+
+Twelve earlier iterations failed by piling on complexity until the system collapsed. Keep it simple.
+
+- **Big picture first.** Prefer the simplest design that solves the real problem. Don't add stages, fallbacks, or heuristics without a clear, general reason.
+- **No market knowledge in code.** Everything about a market lives in its brief (`markets/*.json`). Never add per-company or per-market special cases, keyword lists, or tuned thresholds to code.
+- **CRM data is not truth.** `docs/sample_pac_companies.csv` and anything derived from it is a list of names to test against, with unreliable labels. Never tune anything to match them.
+- **Don't chase test cases.** When a result looks wrong, check the label first, then the brief's wording, and change the prompt only for a general reason. Accuracy is measured by the eval against the reviewed reference set, not by a growing suite of individual cases.
+- **Fast and cheap.** Classification runs at scale; keep cost per company low and say what a change does to cost.
+
+## Secrets
+
+`ANTHROPIC_API_KEY` and `SERPER_API_KEY` live in a local `.env`, which is git-ignored. Never commit `.env` or any key.
