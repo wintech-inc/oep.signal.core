@@ -16,6 +16,7 @@ Texas, and the Midwest in general, is where we would likely find the highest con
 - [Antler Shed](https://theantlersheddeerblinds.com)
 - [Boss Hog](https://bossgamesystems.com)
 - [Atascosa](https://awsblinds.com)
+- [Phantom Blinds](https://phantomblinds.com)
 
 ## Examples of Competitors
 
@@ -23,9 +24,19 @@ Texas, and the Midwest in general, is where we would likely find the highest con
 - [Deerview Windows](https://deerviewwindows.com)
 - [Kudu Outdoor Products](https://www.facebook.com/KuduOutdoorProducts/)
 - [Elusive Wildlife](https://elusivewildlife.com/collections/hunting-blind-windows)
+- [Eagan](https://eaganmfg.com)
+- [Elixir](https://elixirdoorandmetalscompany.com)
+
 
 ## Terms Used to Describe Hunting Blinds
 
+- elevated blinds
+- enclosed blinds
+- box stand
+- tree blind
+- machan
+- sinkbox
+- rifle hideaway
 - hunting blind
 - deer blind
 - blind
@@ -39,14 +50,19 @@ Texas, and the Midwest in general, is where we would likely find the highest con
 ## Aliases for Products We Would Sell
 
 - doors
-	- door
-	- aluminum door
-	- hunting blind door
+	- deer blind door
+	- blind door
+	- deluxe blind door
+	- aluminum frame and fiberglass insert door
 - windows
-	- window
-	- vinyl window
-    - aluminum window
-	- hung window
+	- deer blind window
+	- hinge window
+	- deluxe hinge window
+    - horizontal slide window
+	- vertical slide window
+	- bow window
+	- archery window
+	- archer window
 
 ## Relevant PAC Products
 
@@ -55,3 +71,4 @@ Texas, and the Midwest in general, is where we would likely find the highest con
 - [100HS](https://www.pocahontasaluminum.com/windows-aluminum.php) aluminum window
 - [Delta door](https://www.pocahontasaluminum.com/doors-delta.php) with aluminum frame and fiberglass panels
 - [300 series door](https://www.pocahontasaluminum.com/doors-300.php) with aluminum frame and fiberglass panels
+- AW125 aluminum window
