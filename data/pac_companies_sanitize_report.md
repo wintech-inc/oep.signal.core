@@ -1,0 +1,175 @@
+# Sanitize report
+
+Source: `docs/sample_pac_companies.csv` (1083 rows). Output: `data/pac_companies.json` (917 companies).
+
+- Dropped, no URL: 71
+- Dropped, junk URL: 2
+- Merged duplicates: 65 companies had more than one row
+- Dropped, site does not respond: 17
+
+## Dropped: no URL
+
+- Dixon Poultry Equipment, Co./Reliable
+- Green House Kits1
+- Loup valley Cabins
+- Southern Ag
+- Van Wingerden Greenhouse
+- Arising Industries
+- Cargo Mate
+- Diamond Cargo
+- Elk Creek Trailer
+- Rock Solid Cargo
+- South GA Cargo
+- South Star Trailers
+- Xtreme Cargo Trailers
+- Food Cart USA
+- Food Cart USA
+- Precision Trailer Sales
+- United Food Truck- TX
+- Xtreme Food Trucks & Trailers
+- Xtreme Food Trucks & Trailers
+- Big Dogg Deer Blinds
+- Diamond Deer Blinds
+- Dog House Dealer
+- HJS Hunting Blinds LLC
+- LL Hunting Blinds & Gear
+- Nature Blinds LLC
+- On The Spot Deer Blinds
+- Roberts Hunting Blinds
+- Smithco Livestock & Pet
+- Sniper Blind Company
+- Wilderness Custom Blinds
+- Yoder Hunting Blinds
+- Alabama Custom Cabins
+- Alabama Park Models
+- Avery Cabins
+- Basic Components (BCI)
+- Builders Discount Center
+- EC Barton
+- Evergreen Tiny Homes
+- Jacobsen Manufacturing Inc.
+- Kabco
+- Platinum Cottages
+- Promet Peru
+- Royal Durham Supply
+- Skyline Homes
+- Synergery Structures
+- The Backyard and Beyond
+- Timbercraft Tiny Home
+- Western Mobile Home Supply
+- 4 Seasons Buildings of WV
+- Designer Construction Corp.
+- R&R Logistics
+- Wesco GA
+- Wesco Tex
+- Highland Window & Door, Inc.
+- Jenkins Building Supply
+- Allied Building Stores (ABS)
+- Faithful Homes
+- Backyard Builders
+- Banner Properties LLC
+- Florida Shed Company: Metal Carports St. Petersburg | Tampa
+- Freeman Buildings
+- Hidden Valley Estates
+- JAMCO Buildings
+- Overman Buildings
+- Prime Portable Buildings
+- Sheds Windows and More
+- Steel Frame Products, LLC.
+- Stow It Safe Dock Lockers
+- T4C Custom Portable Buildings
+- Acevedo Enterprises
+- County Glass
+
+## Dropped: junk URL
+
+- Mitch Krivokucha: `No links found`
+- Golden Rule Builders, LLC: `N/A - https://N/A`
+
+## Dropped: site does not respond
+
+- East Texas Poultry Supply: https://www.etpoultry.com/ (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Express Concession Trailers: https://expressconcessiontrailers.com/ (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Lone Star Food Truck And Trailer Distributors: https://lonestarfoodtrailers.com/ (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1010))
+- Tennessee Food Trucks & Trailers for Sale | Custom Mobile Kitchens | Prime: https://primefoodtrailers.com/ (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'primefoodtrailers.com'. (_ssl.c:1010))
+- Insulated Hunting Blinds: https://insulatedhuntingblinds.com/ (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1010))
+- Miller's Hunting Blinds: https://millershuntingblinds.com/ (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Alabama Manufactured Housing: https://alabama.gov/ (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010))
+- Central Trailer Supply, Inc.: https://www.centraltrailer.com/ (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1010))
+- International Manufactured Structures: https://www.imsenclosures.com (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Nationwide Homes, VA: http://www.nationwidecustomhomes.com/ (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Resia: https://www.liveresia.c, (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Cotton Logistics Midland Man Camp: https://cottonlogistics.com/ (ReadTimeout: )
+- FAS Windows & Doors: https://www.faswindowsanddoors.com/ (ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1010))
+- 406 Structures: https://www.406structures.com/ (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- D&M Barns: https://www.dmininbars.com (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Miranda Metal Buildings: https://mirandabuildings.com/ (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+- Tru Worth: https://www.ezportablebuildings.com/ (ConnectError: [Errno 8] nodename nor servname provided, or not known)
+
+## Merged duplicates (rows per company; first name kept, other names become aliases)
+
+- `mortonbuildings.com`: Morton Buildings; Morton Buildings
+- `qcsupply.com`: QC Supply; QC Supply
+- `reliablepoultry.com`: Reliable Poultry; Reliable Poultry Supply
+- `midwestlivestock.com`: Midwest Livestock; Midwest Livestock
+- `freedomcampers.com`: Freedom Campers; Freedom Campers
+- `concessionnation.com`: # 1 U.S. Food Truck Builder | Concession Nation | Trailer Mfg.; Concession Nation, Inc.
+- `bestbuilttrailer.com`: Best Built Trailers; Best Built Trailers
+- `fireflyfabrication.com`: Firefly | Food Trucks | Concession Trailers | Marketing Vehicles; Firefly Fabrication
+- `foodtruckssouth.com`: Food Trucks South; Food Trucks South
+- `goldenstatetrailers.com`: Golden State Trailers; Golden State Trailers | Custom Food Trailers Manufacturer
+- `jackofalltradesbygeorge.com`: Jack Of All Trades By George LLC; Jack of All Trades: By George
+- `mr-trailers.com`: M & R Specialty Trailers and Trucks; M&R Specialty Trailers and Trucks
+- `recpro.com`: RecPro; RecPro
+- `gulflandstructures.com`: Gulf Land Structures; Gulfland Structures
+- `awsblinds.com`: Atascosa Wildlife Supply, Inc.; Atascosa Wildlife Supply, Inc. | Texas Hunting Blinds, Trailers ...
+- `blackdogfarmllc.org`: Black Dog Farm; Black Dog Farm LLC
+- `bossgamesystems.com`: Boss Game Systems; Boss Game Systems; Boss Game Systems
+- `dillonmanuf.com`: Dillon Manufacturing; Fiberglass Deer Hunting Blinds | Dillon Manufacturing | Texas
+- `driftlessoutdoorsllc.com`: Driftless Outdoors (Driftless Hunting Blinds); Driftless Outdoors
+- `eshutilitybuildings.com`: Esh's Utility Buildings; Esh's Utility Buildings
+- `texashunterproducts.com`: Hunting Blinds; Texas Hunter Products
+- `jdmoutdoors.com`: JDM Outdoors; JDM Structures Outdoors of Lewis Center
+- `maverickhunting.com`: Maverick Blinds; Maverick Hunting: Maverick Blinds | Booner Blinds | Hard Sided Deer ...
+- `ranchkingblinds.com`: MB Ranch King Blinds; Ranch King Blinds
+- `tboxblinds.com`: T Box Deer Blinds; TBox Blinds
+- `tankblinds.com`: Tank Blinds; Tank Blinds
+- `amsiic.com`: Integrated Industries Corp.; Integrated Industries Corp.
+- `cavcohomes.com`: Cavco home Center; Cavco Industries, Inc.; Palm Harbor Homes - Plant City; Cavco Homes
+- `championhomes.com`: Champion - New Era Building Systems; Champion Homes Manufacturing Facility - Lillington
+- `deervalleyhb.com`: Deer Valley Homebuilders, Inc.; DeerValley Homebuilders; Manufactured & Modular Homes in Alabama - Deer Valley ...
+- `elixirdoorandmetalscompany.com`: Elixir Door and Metals Company; Elixir Door and Metals Company
+- `franklinhomesusa.com`: Franklin Homes; Franklin Homes; Louisiana Modular Homes | Authorized Retailers in LA
+- `jessuphousing.com`: Jessup Housing; Jessup Housing; Jessup Housing; Jessup Housing
+- `kendallcabin.com`: Kendall Cabin Company; Kendall Cabin Co.
+- `lelandsmodular.com`: Leland's Modular; Lelands Modular
+- `marathonhomes.com`: Marathon Homes; Marathon Homes
+- `sunshinehomes-inc.com`: Sunshine Homes; Sunshine Homes; Sunshine Homes: Manufactured & Modular Homes Built in Red Bay, AL
+- `westlanddistributing.com`: Westland Distributing; Westland Distribution
+- `ariesbuildings.com`: Aries Building Systems, LLC.; Aries Buildings
+- `boxxmodular.com`: Boxx Modular; BOXX Modular, Inc.
+- `mobilemodular.com`: Mobile Modular; Mobile Modular Management Corporation
+- `wehsupply.com`: W.E.H. Supply, Inc.; Find the Best Wholesale Materials for Portable Outdoor Sheds
+- `willscot.com`: WillScot; WillScot; WillScot
+- `ozark-ag.com`: Ozark Ag; Ozark Ag; Ozark-Ag
+- `smithpoultryalabama.com`: Smith Poultry & Supply; Smith Poultry & SUPPLY of North Alabama
+- `southernagbuilders.com`: Southern Ag Builders & Supply; Southern Ag Builders & Supply LLC
+- `spspoultry.com`: Superior Poultry Supply; Superior Poultry Supply
+- `bldr.com`: Builders FirstSource; Builders FirstSource | Building Supplies & Materials
+- `actionbuildings.com`: Action Buildings; He and She Sheds by Action Buildings
+- `justplainbusiness.com`: AZ Structures; Nittany Structures
+- `calhounsheds.com`: Beck's Awesome Company; Calhoun Sheds
+- `coast-to-coastcarports.com`: Coast to Coast Carports, Inc.; Coast to Coast Carports, Inc.
+- `derksenbuildings.com`: Derksen Portable Building; Derksen Portable Buildings
+- `eaglecarports.com`: Eagle Carports; USA Steel Buildings, Inc.
+- `gracelandportablebuildings.com`: Graceland Portable Buildings; Graceland Portable Buildings (Acadia Services LLC - New Shed Construction)
+- `storageshedsnc.com`: Hometown Sheds / IP Storage Solutions Inc.; Hometown Sheds of Gastonia
+- `midcoproducts.com`: Midco Products; Midco Products
+- `millershed.com`: Miller Shed; Miller Sheds
+- `palmettoshedcompany.com`: Palmetto Shed Company; Superior Quality Custom Sheds Serving Lexington, SC
+- `ridoutlumber.com`: Ridout Lumber Company; Ridout Lumber Company
+- `robinbuilders.com`: Robin Builders; Robin Builders; Robin Builders
+- `shedsdirectinc.com`: Sheds Direct, Inc.; Sheds Direct, Inc.
+- `smithbilt.com`: Smithbilt; Smithbilt Industries, Inc.
+- `suncrestsheds.com`: Suncrest Sheds; Suncrest Sheds Inc.
+- `westcoastmetalbuildingsinc.com`: West Coast Metal Buildings, Inc.; West Coast Metal Buildings, Inc.
