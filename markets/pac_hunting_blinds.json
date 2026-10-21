@@ -45,15 +45,18 @@
     "Other hunting products (feeders, stands, trail cameras, apparel, firearms, optics, decoys) are OUT.",
     "Outfitters, ranches, hunting preserves, and blind rental companies are OUT."
   ],
+  "role_notes": [
+    "Dealers and retailers that only resell finished hunting blinds are neither customers nor competitors."
+  ],
   "examples_in": [
-    {"name": "Ranch King", "url": "https://www.ranchkingblinds.com", "rule": "A"},
-    {"name": "The Antler Shed", "url": "https://theantlersheddeerblinds.com", "rule": "A"},
-    {"name": "Boss Game Systems", "url": "https://bossgamesystems.com", "rule": "A"},
-    {"name": "Atascosa Wildlife Supply", "url": "https://awsblinds.com", "rule": "A"},
-    {"name": "The Original Deer Blind Window Company", "url": "https://thedeerblindwindow.com", "rule": "C"},
-    {"name": "Deerview Windows", "url": "https://deerviewwindows.com", "rule": "C"},
-    {"name": "Kudu Outdoor Products", "url": "https://www.facebook.com/KuduOutdoorProducts/", "rule": "C"},
-    {"name": "Elusive Wildlife", "url": "https://elusivewildlife.com/collections/hunting-blind-windows", "rule": "C"}
+    {"name": "Ranch King", "url": "https://www.ranchkingblinds.com", "rule": "A", "role": "customer"},
+    {"name": "The Antler Shed", "url": "https://theantlersheddeerblinds.com", "rule": "A", "role": "customer"},
+    {"name": "Boss Game Systems", "url": "https://bossgamesystems.com", "rule": "A", "role": "customer"},
+    {"name": "Atascosa Wildlife Supply", "url": "https://awsblinds.com", "rule": "A", "role": "customer"},
+    {"name": "The Original Deer Blind Window Company", "url": "https://thedeerblindwindow.com", "rule": "C", "role": "competitor"},
+    {"name": "Deerview Windows", "url": "https://deerviewwindows.com", "rule": "C", "role": "competitor"},
+    {"name": "Kudu Outdoor Products", "url": "https://www.facebook.com/KuduOutdoorProducts/", "rule": "C", "role": "competitor"},
+    {"name": "Elusive Wildlife", "url": "https://elusivewildlife.com/collections/hunting-blind-windows", "rule": "C", "role": "competitor"}
   ],
   "pac_products": [
     {"name": "V21", "description": "vinyl window", "url": "https://www.pocahontasaluminum.com/windows-vinyl.php"},

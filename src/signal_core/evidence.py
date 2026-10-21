@@ -1,4 +1,5 @@
-"""Evidence for the classifier: the company's homepage text and one Serper site search.
+"""Evidence for the classifiers: the company's homepage text and one Serper site search (stage 1),
+plus one Serper search for products like ours (stage 2).
 
 Every fetch and search result is cached in .cache/ so re-runs only pay for LLM calls.
 Delete .cache/ (or a subfolder) to refetch.
@@ -65,10 +66,19 @@ def root_url(url: str) -> str:
 
 def search_query(company: Company, market: Market) -> str:
     """site:<domain> plus the market's terms OR'ed together. Social pages search by name instead."""
+    return _scoped_query(company, market.end_product.terms + market.our_products.terms)
+
+
+def product_search_query(company: Company, market: Market) -> str | None:
+    """Like search_query, but only the terms for products like ours (stage 2). None if the brief has none."""
+    return _scoped_query(company, market.our_products.terms) if market.our_products.terms else None
+
+
+def _scoped_query(company: Company, all_terms: list[str]) -> str:
     scope = f'"{company.name}"' if company.is_social else f"site:{company_key(company.url)}"
     words = len(scope.split())
     terms = []
-    for term in market.end_product.terms + market.our_products.terms:
+    for term in all_terms:
         n = len(term.split())
         if words + n > MAX_QUERY_WORDS:
             break
@@ -157,3 +167,7 @@ class Fetcher:
         else:
             homepage, search = await asyncio.gather(self.homepage(company.url), self.search(query))
         return {"homepage": homepage, "search": search}
+
+    async def product_search(self, company: Company, market: Market) -> dict:
+        query = product_search_query(company, market)
+        return await self.search(query) if query else {"query": "(no product terms in the brief)", "results": []}
