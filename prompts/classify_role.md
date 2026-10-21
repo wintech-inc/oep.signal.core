@@ -11,9 +11,9 @@ You classify companies for a B2B market map. One company, already known to parti
 
 **Competitor: yes** if it makes or sells {our_products.category} for {end_product.name}s, whether its own or another maker's.
 
-A company can be both. It can also be neither, for example if it only resells finished {end_product.name}s or the evidence doesn't show either activity.
+A company can be both. A distributor, dealer, or store that resells another maker's {our_products.category} for {end_product.name}s is both: it sells products like ours, and it resells components, so it could carry ours too. A company can also be neither, for example if it only resells finished {end_product.name}s or the evidence doesn't show either activity.
 
-A builder that makes its own {our_products.category} only for its own {end_product.name}s is a customer, not a competitor.
+A builder that makes its own {our_products.category} only for its own {end_product.name}s, including replacement parts for them, is a customer, not a competitor.
 
 When the evidence suggests the company is a customer but doesn't prove it, answer yes. Answer competitor yes only when the evidence shows it makes or sells {our_products.category}.
 
