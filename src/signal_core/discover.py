@@ -610,11 +610,7 @@ class Discovery:
         leads = self.seed_leads() + [lead for found in await asyncio.gather(*(one(j) for j in jobs)) for lead in found]
         new = await self.add_leads(leads)
         self.save()
-        await self.classify_pending()
-        await self.locate()
-        for q in self.state["queries"].values():
-            if not q["settled"]:
-                settle(q, self.candidates)
+        await self.settle_round()
         new_in = [c for c in self.in_market() if c["round"] == r]
         stats = {
             "round": r, "queries": len(due), "snowballed": len(snow), "leads": len(leads), "new_candidates": new,
@@ -629,11 +625,30 @@ class Discovery:
               f"({stats['total_in']} total), ${stats['cost']:.2f}", file=sys.stderr)
         return stats
 
+    def backlog(self) -> int:
+        return sum(1 for c in self.candidates.values() if c.get("verdict") in (None, "error"))
+
+    async def settle_round(self) -> None:
+        """Classify everything not yet classified, locate new in-market companies, and settle the paging rule."""
+        await self.classify_pending()
+        await self.locate()
+        for q in self.state["queries"].values():
+            if not q["settled"]:
+                settle(q, self.candidates)
+
     async def run(self, rounds: int = ROUNDS) -> None:
+        """Rounds until one adds under STOP_SHARE new in-market companies. Candidates a budget stop left
+        unclassified are classified first, before any new searching (`--rounds 0` does only that)."""
+        if self.backlog():
+            print(f"{self.market.id}: classifying {self.backlog()} candidates left from the last run", file=sys.stderr)
+            await self.settle_round()
+            self.save()
         for _ in range(rounds):
+            if self.stopped_on_budget:
+                break
             stats = await self.round()
             self.save()
-            if self.stopped_on_budget or should_stop(stats["new_in"], stats["total_in"]):
+            if self.stopped_on_budget or (not self.backlog() and should_stop(stats["new_in"], stats["total_in"])):
                 break
         self.finish("discover")
 
@@ -816,11 +831,21 @@ def report(market: Market, state: dict) -> str:
     lines += ["## Rounds (saturation curve)", "",
               "| Round | Queries run | Snowballed | Leads | New candidates | New in market | % of list | Cost | Minutes |",
               "|---|---|---|---|---|---|---|---|---|"]
+    # In-market counts per round come from the candidates, so companies classified in a later run count for the
+    # round that found them.
+    in_by_round = Counter(c["round"] for c in ins)
+    unclassified = sum(1 for c in cands.values() if c.get("verdict") in (None, "error"))
     for r in state["rounds"]:
+        new_in, total_in = in_by_round[r["round"]], sum(n for k, n in in_by_round.items() if k <= r["round"])
         lines.append(f"| {r['round']} | {r['queries']} | {r['snowballed']} | {r['leads']} | {r['new_candidates']} | "
-                     f"{r['new_in']} | {pct(r['new_in'], r['total_in'])} | ${r['cost']:.2f} | {r['seconds'] / 60:.0f} |")
-    lines += ["", f"Last round added {pct(last.get('new_in', 0), last.get('total_in', 0))} new in-market companies "
-              f"(stop rule: under {STOP_SHARE:.0%})." if last else "", ""]
+                     f"{new_in} | {pct(new_in, total_in)} | ${r['cost']:.2f} | {r['seconds'] / 60:.0f} |")
+    if last and unclassified:
+        lines += ["", f"**{unclassified} candidates are not classified yet**, so the last round's count is incomplete "
+                  "and says nothing about saturation."]
+    elif last:
+        new_in = in_by_round[last["round"]]
+        lines += ["", f"Last round added {pct(new_in, len(ins))} new in-market companies (stop rule: under {STOP_SHARE:.0%})."]
+    lines.append("")
 
     queries = [q for q in state["queries"].values() if q["page"]]
     depth = Counter(q["page"] for q in queries)
@@ -860,7 +885,6 @@ def report(market: Market, state: dict) -> str:
 
     due = [q for q in state["queries"].values() if q["due"]]
     snow_left = sum(1 for c in ins if c["company_id"] not in state["snowballed"])
-    unclassified = sum(1 for c in cands.values() if c.get("verdict") in (None, "error"))
     lines += ["## Left to do", "",
               f"Queries with a next page due: {len(due)}. In-market companies not yet snowballed: {snow_left}. "
               f"Candidates not yet classified (or errors): {unclassified}.", ""]

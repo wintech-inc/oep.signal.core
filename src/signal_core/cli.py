@@ -342,7 +342,8 @@ def main():
     p.add_argument("--market", required=True)
     p.add_argument("--no-seeds", action="store_true", help="Blind run without the seed list -> data/discovery/<market>.blind.json")
     p.add_argument("--sources", help=f"Comma-separated subset of: {', '.join(dc.SOURCES)} (default: all)")
-    p.add_argument("--rounds", type=int, default=dc.ROUNDS, help="Most rounds in this run")
+    p.add_argument("--rounds", type=int, default=dc.ROUNDS,
+                   help="Most rounds in this run (0: only classify what the last run left unclassified)")
     p.add_argument("--max-cost", type=float, default=dc.MAX_COST, help="Stop starting new work at this estimated spend (USD)")
     p.add_argument("--reclassify", action="store_true", help="Ignore stored verdicts and classify again")
     p.set_defaults(func=cmd_discover)
