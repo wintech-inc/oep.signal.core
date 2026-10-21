@@ -1,7 +1,7 @@
 from signal_core import markets
 from signal_core.companies import company_key
 from signal_core.discover import (
-    MAX_PAGE, QueryFile, add_found_by, first_queries, lead_url, nearby_queries, new_query, parse_town, settle,
+    MAX_PAGE, QueryFile, add_found_by, first_queries, lead_url, nearby_queries, new_query, outside_us, parse_town, settle,
     should_stop, title_name,
 )
 
@@ -33,6 +33,14 @@ def test_title_name():
     assert title_name("Box Blinds - Texas Hunting Products", "https://texashuntingproducts.com/blinds") == "Texas Hunting Products"
     assert title_name("Kudu Outdoor Products | Facebook", "https://facebook.com/KuduOutdoorProducts") == "Kudu Outdoor Products"
     assert title_name("Home", "https://www.acme.com/") == "acme.com"
+    assert title_name("At Northeast Agri systems we take pride in every house we build | Facebook",
+                      "https://facebook.com/NortheastAgriSystems") == "Northeast Agri Systems"
+
+
+def test_outside_us():
+    assert outside_us({"url": "https://pwmaines.co.uk/", "location": None})
+    assert outside_us({"url": "https://acme.com/", "location": "Mitchell, ON"})
+    assert not outside_us({"url": "https://acme.co/", "location": "Cullman, AL"})
 
 
 def test_first_queries():

@@ -163,7 +163,7 @@ def title_name(title: str, url: str) -> str:
     """A company name from a search result title: the title segment that best matches the domain."""
     segments = [s.strip() for s in re.split(r"\s+[|\-–—•·:]\s+|\s+\(@", title) if s.strip()]
     if is_social(url):
-        return segments[0] if segments else company_key(url)
+        return social_name(segments[0] if segments else "", url)
     label = norm_name(bare_host(url).split(".")[0])
 
     def score(segment):
@@ -172,6 +172,27 @@ def title_name(title: str, url: str) -> str:
 
     best = max(segments, key=score, default="")
     return best if best and score(best) > 0 else bare_host(url)
+
+
+def social_name(name: str, url: str) -> str:
+    """A social page's name: the given one, unless it reads like a post (long), then the page handle."""
+    if name and len(name.split()) <= 6:
+        return name
+    handle = urlsplit(url).path.rstrip("/").split("/")[-1]
+    if re.search(r"[A-Za-z]", handle):
+        return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", handle).replace(".", " ").replace("_", " ")
+    return name or handle
+
+
+# Two-letter domain endings widely used by US companies, not as a country.
+GENERIC_CC_DOMAINS = {"us", "co", "io", "ai", "me", "tv", "ly", "cc", "fm"}
+
+
+def outside_us(candidate: dict) -> bool:
+    """Shown in the leads sheet and report, never filtered: a non-US state or province code, or a country domain."""
+    state = state_of(candidate.get("location"))
+    ending = bare_host(candidate["url"]).rsplit(".", 1)[-1]
+    return bool(state and state not in US_STATES) or (len(ending) == 2 and ending not in GENERIC_CC_DOMAINS)
 
 
 def parse_town(text: str | None) -> str | None:
@@ -753,7 +774,7 @@ async def write_queries(market: Market) -> QueryFile:
 # Outputs: leads sheet and report
 
 LEAD_COLUMNS = ["company_id", "name", "url", "location", "role", "rule", "reason", "evidence_url", "role_reason",
-                "customer_evidence_url", "competitor_evidence_url", "sources", "found_by", "round", "seed"]
+                "customer_evidence_url", "competitor_evidence_url", "outside_us", "sources", "found_by", "round", "seed"]
 
 
 def write_leads(market_id: str, state: dict) -> Path:
@@ -764,7 +785,9 @@ def write_leads(market_id: str, state: dict) -> Path:
         writer = csv.DictWriter(f, fieldnames=LEAD_COLUMNS, extrasaction="ignore")
         writer.writeheader()
         for c in rows:
-            writer.writerow({**c, "sources": ", ".join(sorted(sources_of(c))),
+            name = social_name(c["name"], c["url"]) if is_social(c["url"]) else c["name"]
+            writer.writerow({**c, "name": name, "outside_us": "yes" if outside_us(c) else "",
+                             "sources": ", ".join(sorted(sources_of(c))),
                              "found_by": "; ".join(f["detail"] for f in c["found_by"][:3])})
     return path
 
@@ -890,7 +913,8 @@ def report(market: Market, state: dict) -> str:
     outside = sum(n for s, n in states.items() if s and home and s not in home)
     lines += ["## By state", "",
               f"Location known for {len(ins) - states[None]} of {len(ins)} in-market companies. "
-              f"Outside the search locations (shown, not filtered): {outside}.", "",
+              f"Outside the search locations (shown, not filtered): {outside}. Likely outside the US by location or "
+              f"country domain (marked in the leads sheet, not filtered): {sum(outside_us(c) for c in ins)}.", "",
               ", ".join(f"{s} {n}" for s, n in sorted(states.items(), key=lambda x: (-x[1], x[0] or "")) if s), ""]
 
     unresolved = state["unresolved"]
