@@ -50,6 +50,9 @@ class Geography(Strict):
     countries: list[str]
     note: str
     priority_states: list[str]
+    search_locations: list[str] = Field(
+        default_factory=list,
+        description="Places discovery searches in, one search per query and location (M3). Spreads the searches; nothing is filtered by location.")
 
 
 class Market(Strict):
@@ -77,7 +80,7 @@ def write_schema() -> Path:
 
 
 def market_ids() -> list[str]:
-    return sorted(p.stem for p in MARKETS_DIR.glob("*.json") if p.name != "schema.json")
+    return sorted(p.stem for p in MARKETS_DIR.glob("*.json") if p.name != "schema.json" and "." not in p.stem)
 
 
 def load_market(market_id: str) -> Market:

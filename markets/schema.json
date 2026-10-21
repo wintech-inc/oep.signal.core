@@ -101,6 +101,14 @@
           },
           "title": "Priority States",
           "type": "array"
+        },
+        "search_locations": {
+          "description": "Places discovery searches in, one search per query and location (M3). Spreads the searches; nothing is filtered by location.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Search Locations",
+          "type": "array"
         }
       },
       "required": [
