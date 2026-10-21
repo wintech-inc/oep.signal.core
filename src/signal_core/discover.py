@@ -834,24 +834,37 @@ def report(market: Market, state: dict) -> str:
         "",
     ]
     if state["blind"]:
-        refound = [k for k in seed_in if k in cands]
-        missed = sorted(k for k in seed_in if k not in cands)
-        out_now = [k for k in refound if cands[k].get("verdict") != "in"]
+        names = {r["company_id"]: r["name"] for r in _roles_rows(market.id)}
+        if full := load_state(market.id):
+            names |= {k: c["name"] for k, c in full["candidates"].items()}
+        by_name = {}
+        for k, c in cands.items():
+            by_name.setdefault(norm_name(c["name"]), k)
+        # A seed company counts as re-found under its own URL, or under another page with exactly its name
+        # (its Facebook or Instagram page, for example).
+        found_as = {k: k if k in cands else by_name.get(norm_name(names.get(k, ""))) for k in seed_in}
+        refound = [k for k, f in found_as.items() if f]
+        missed = sorted((k for k, f in found_as.items() if not f), key=lambda k: names.get(k, k).lower())
+        other_page = [k for k in refound if found_as[k] != k]
+        pending = [k for k in refound if cands[found_as[k]].get("verdict") in (None, "error")]
+        judged = [k for k in refound if cands[found_as[k]].get("verdict") not in (None, "error", "in")]
         lines += [
             "## Floor: re-finding the seed list", "",
             f"Re-found {len(refound)} of the {len(seed_in)} in-market seed companies ({pct(len(refound), len(seed_in))}) "
-            f"without the seed list. {len(out_now)} of those re-found were judged differently this time "
-            "(M1 run-to-run variance, not a discovery miss).", "",
+            f"without the seed list ({len(other_page)} of them under another page with the same name). Of those, "
+            f"{len(judged)} were judged differently this time (M1 run-to-run variance or different evidence on the "
+            f"other page, not a discovery miss) and {len(pending)} are not classified yet.", "",
         ]
         if missed:
-            lines += ["Missed (never surfaced by any source):", ""]
-            names = {r["company_id"]: r["name"] for r in _roles_rows(market.id)}
+            lines += ["Missed (not found by any source under its URL or its exact name):", ""]
             lines += [f"- {names.get(k, k)} (`{k}`)" for k in missed]
             lines.append("")
-        if out_now:
-            lines += ["Re-found but judged differently this run:", ""]
-            lines += [f"- {cands[k]['name']} (`{k}`): {cands[k].get('verdict')}. {cands[k].get('reason', '')}" for k in out_now]
-            lines.append("")
+        for title, keys in (("Re-found under another page", other_page), ("Re-found but judged differently", judged)):
+            if keys:
+                lines += [f"{title}:", ""]
+                lines += [f"- {names.get(k, k)} (`{k}`) as `{found_as[k]}`: {cands[found_as[k]].get('verdict')}. "
+                          f"{cands[found_as[k]].get('reason') or ''}".rstrip() for k in keys]
+                lines.append("")
 
     by_source = {s: [c for c in cands.values() if s in sources_of(c)] for s in (*SOURCES, "probe")}
     lines += ["## By source", "",
