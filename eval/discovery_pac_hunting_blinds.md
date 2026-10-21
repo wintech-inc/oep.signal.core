@@ -4,9 +4,9 @@
 
 ## Headline
 
-**709 in-market companies**: 394 customer, 77 both, 6 competitor, 232 neither.
+**1140 in-market companies**: 605 customer, 104 both, 10 competitor, 421 neither.
 
-That is **4.8x** the 147 in-market companies on the seed list. 562 of them are not on the seed list at all.
+That is **7.8x** the 147 in-market companies on the seed list. 993 of them are not on the seed list at all.
 
 ## By source
 
@@ -14,25 +14,25 @@ That is **4.8x** the 147 in-market companies on the seed list. 562 of them are n
 |---|---|---|---|---|---|---|---|
 | seed | 917 | 150 | 119 | 19 | 2 | 10 | 11 |
 | model | 10 | 7 | 3 | 1 | 0 | 3 | 0 |
-| web | 2815 | 570 | 331 | 70 | 6 | 163 | 134 |
-| maps | 4324 | 308 | 171 | 32 | 1 | 104 | 9 |
-| lists | 4070 | 172 | 82 | 30 | 1 | 59 | 18 |
-| nearby | 5807 | 480 | 276 | 52 | 2 | 150 | 0 |
-| snowball | 4069 | 137 | 74 | 20 | 2 | 41 | 0 |
+| web | 2815 | 696 | 391 | 80 | 8 | 217 | 220 |
+| maps | 4324 | 348 | 187 | 35 | 2 | 124 | 34 |
+| lists | 4070 | 194 | 96 | 30 | 1 | 67 | 30 |
+| nearby | 5807 | 731 | 409 | 69 | 3 | 250 | 209 |
+| snowball | 4069 | 193 | 93 | 20 | 3 | 77 | 41 |
 
 ## Rounds (saturation curve)
 
 | Round | Queries run | Snowballed | Leads | New candidates | New in market | % of list | Cost | Minutes |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 2930 | 0 | 29898 | 7459 | 709 | 100% | $14.54 | 24 |
-| 2 | 5082 | 709 | 58682 | 10586 | 0 | 0% | $15.52 | 27 |
+| 2 | 5082 | 709 | 58682 | 10586 | 431 | 38% | $15.52 | 27 |
 
-Last round added 0% new in-market companies (stop rule: under 2%).
+**1 candidates are not classified yet**, so the last round's count is incomplete and says nothing about saturation.
 
 ## Paging depth
 
 5710 queries ran. Deepest page reached per query: page 1: 3408, page 2: 2302.
- 0 queries still have a productive next page.
+ 671 queries still have a productive next page.
 
 - `web: hunting blind manufacturer`: 2 pages
 - `web: hunting blind manufacturer in Alabama`: 2 pages
@@ -49,15 +49,15 @@ Towns searched with nearby queries: 278.
 
 ## Source overlap and market size
 
-- In-market companies found by two or more sources (not counting the seed list): 522 of 709 (74%).
-- Maps (map search, including nearby map searches) found 343; everything else found 672; both found 306.
-- Capture-recapture estimate of the reachable market: about 753 in-market companies (we have 709).
+- In-market companies found by two or more sources (not counting the seed list): 580 of 1140 (51%).
+- Maps (map search, including nearby map searches) found 439; everything else found 1029; both found 328.
+- Capture-recapture estimate of the reachable market: about 1377 in-market companies (we have 1140).
 
 ## By state
 
-Location known for 333 of 709 in-market companies. Outside the search locations (shown, not filtered): 0.
+Location known for 573 of 1140 in-market companies. Outside the search locations (shown, not filtered): 2.
 
-TX 68, PA 26, MI 23, WI 22, MN 18, MO 18, KY 14, OH 14, LA 11, MS 9, IL 8, KS 8, NC 8, NY 8, AL 7, AR 7, IA 6, ME 5, OK 5, IN 4, NE 4, TN 4, VA 4, CT 3, FL 3, GA 3, MT 3, ND 3, SC 3, CO 2, NJ 2, WY 2, CA 1, MD 1, OR 1, SD 1, UT 1, VT 1, WA 1, WV 1
+TX 101, PA 50, WI 34, MI 33, OH 32, MO 26, MN 25, LA 21, KY 20, AL 17, NY 15, AR 14, NC 14, IA 13, MS 13, IL 12, KS 11, GA 10, IN 10, TN 10, FL 9, ND 9, VA 9, NE 7, OK 7, SC 7, ME 5, WV 5, CT 4, NJ 4, MD 3, MT 3, NH 3, CA 2, CO 2, SD 2, VT 2, WA 2, WY 2, MA 1, ON 1, OR 1, QC 1, UT 1
 
 ## Leads dropped: no website found
 
@@ -65,13 +65,14 @@ TX 68, PA 26, MI 23, WI 22, MN 18, MO 18, KY 14, OH 14, LA 11, MS 9, IL 8, KS 8,
 
 ## Left to do
 
-Queries with a next page due: 0. In-market companies not yet snowballed: 0. Candidates not yet classified (or errors): 10586.
+Queries with a next page due: 671. In-market companies not yet snowballed: 431. Candidates not yet classified (or errors): 1.
 
 ## Runs
 
-| Command | Sources | Searches | LLM calls | Classified | Cost | Minutes | Stopped on budget |
+| Command | Sources | Searches | LLM calls | Classified | Cost | Minutes | Stopped early |
 |---|---|---|---|---|---|---|---|
-| discover | lists, maps, model, nearby, seed, snowball, web | 10268 | 3069 | 7459 | $14.54 | 24.3 | yes |
-| discover | lists, maps, model, nearby, seed, snowball, web | 12470 | 8503 | 0 | $15.52 | 27.4 | yes |
+| discover | lists, maps, model, nearby, seed, snowball, web | 10268 | 3069 | 7459 | $14.54 | 24.3 | budget |
+| discover | lists, maps, model, nearby, seed, snowball, web | 12470 | 8503 | 0 | $15.52 | 27.4 | budget |
+| discover | lists, maps, model, nearby, seed, snowball, web | 11394 | 0 | 10586 | $16.03 | 33.5 | budget |
 
-Total candidates: 18045. Verdicts: None 10586, out 6025, unknown 725, in 709.
+Total candidates: 18045. Verdicts: out 14838, unknown 2066, in 1140, error 1.
