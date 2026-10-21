@@ -325,7 +325,7 @@ class Discovery:
                     model=model, max_tokens=max_tokens, system=system,
                     messages=[{"role": "user", "content": user}],
                     output_config={"effort": SONNET_EFFORT if sonnet else EFFORT}, output_format=schema)
-        except (anthropic.APIError, httpx.HTTPError) as e:
+        except (anthropic.APIError, httpx.HTTPError, ValueError) as e:   # ValueError: output cut off at max_tokens
             self.spend["llm_errors"] += 1
             print(f"\n{type(e).__name__}: {e}"[:300], file=sys.stderr)
             return None
@@ -366,7 +366,7 @@ class Discovery:
                          for r in results if r["link"]]
         except httpx.HTTPError as e:
             self.spend["search_errors"] += 1
-            print(f"\nsearch failed: {query['q']}: {e}"[:300], file=sys.stderr)
+            print(f"\nsearch failed: {query['q']}: {type(e).__name__} {e}"[:300], file=sys.stderr)
             return []
         query.update(page=page, round=self.state["round"], keys=[], settled=False, due=False)
         if query["source"] == "lists":
@@ -383,10 +383,9 @@ class Discovery:
         if not page["text"]:
             self.spend["lists_empty"] += 1
             return []
-        system = (PROMPTS / "read_list.md").read_text()
         chunks = [page["text"][i:i + LIST_CHUNK_CHARS] for i in range(0, len(page["text"]), LIST_CHUNK_CHARS)]
-        answers = await asyncio.gather(*(self.ask(MODEL, system, f"Page: {page['final_url']}\n\n{chunk}", ListPage,
-                                                  max_tokens=16000) for chunk in chunks[:LIST_CHUNKS]))
+        answers = [a for found in await asyncio.gather(*(self.read_chunk(page["final_url"], c) for c in chunks[:LIST_CHUNKS]))
+                   for a in found]
         site = company_key(page["final_url"] or url)
         leads, more = [], []
         for answer in filter(None, answers):
@@ -400,6 +399,15 @@ class Discovery:
             for found in await asyncio.gather(*(self.read_list(u, source, qid, 1) for u in list(dict.fromkeys(more))[:MORE_PAGES])):
                 leads += found
         return leads
+
+    async def read_chunk(self, url: str, text: str) -> list[ListPage]:
+        """The list reader on one chunk. A chunk listing too many companies for one answer is read in halves."""
+        answer = await self.ask(MODEL, (PROMPTS / "read_list.md").read_text(), f"Page: {url}\n\n{text}", ListPage,
+                                max_tokens=16000)
+        if answer is None and len(text) > LIST_CHUNK_CHARS / 8:
+            half = len(text) // 2
+            return [a for part in (text[:half], text[half:]) for a in await self.read_chunk(url, part)]
+        return [answer] if answer else []
 
     async def snowball(self, key: str) -> list[Lead]:
         """An in-market company's homepage, plus up to SNOWBALL_PAGES list pages from one site search."""
@@ -582,13 +590,19 @@ class Discovery:
 
         async def one(job):
             nonlocal done
-            leads = await job
+            try:
+                leads = await job
+            except Exception as e:   # one failed job must not lose the round
+                self.spend["job_errors"] += 1
+                print(f"\njob failed: {type(e).__name__}: {e}"[:300], file=sys.stderr)
+                leads = []
             done += 1
             self.progress(f"searching {done}/{len(jobs)}")
             return leads
 
         leads = self.seed_leads() + [lead for found in await asyncio.gather(*(one(j) for j in jobs)) for lead in found]
         new = await self.add_leads(leads)
+        self.save()
         await self.classify_pending()
         await self.locate()
         for q in self.state["queries"].values():
@@ -621,6 +635,7 @@ class Discovery:
             "command": command, "sources": sorted(self.sources), "rounds": self.state["round"],
             "searches": self.fetcher.searches, "llm_calls": self.spend["llm_calls"], "classified": self.spend["classified"],
             "llm_errors": self.spend["llm_errors"], "search_errors": self.spend["search_errors"],
+            "job_errors": self.spend["job_errors"],
             "cost": round(self.cost(), 2), "minutes": round((time.time() - self.started) / 60, 1),
             "max_cost": self.max_cost, "stopped_on_budget": self.stopped_on_budget,
         })

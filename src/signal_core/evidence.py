@@ -182,9 +182,17 @@ class Fetcher:
     async def _serper(self, endpoint: str, body: dict) -> dict:
         if not self.serper_key:
             raise SystemExit("SERPER_API_KEY is not set (add it to .env)")
-        async with self.limit:
-            r = await self.http.post(f"https://google.serper.dev/{endpoint}", json=body,
-                                     headers={"X-API-KEY": self.serper_key})
+        for attempt in range(3):   # Serper sometimes times out or answers 5xx under load: try again
+            try:
+                async with self.limit:
+                    r = await self.http.post(f"https://google.serper.dev/{endpoint}", json=body,
+                                             headers={"X-API-KEY": self.serper_key})
+                if r.status_code < 500 or attempt == 2:
+                    break
+            except httpx.TransportError:
+                if attempt == 2:
+                    raise
+            await asyncio.sleep(2 ** (attempt + 1))
         r.raise_for_status()
         self.searches += 1
         return r.json()
