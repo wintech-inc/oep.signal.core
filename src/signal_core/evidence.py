@@ -120,6 +120,7 @@ class Fetcher:
         )
         self.serper_key = os.environ.get("SERPER_API_KEY")
         self.searches = 0
+        self.refusals, self.refusal = 0, ""   # Serper client errors in a row, and the last one's message
 
     async def __aenter__(self):
         return self
@@ -193,6 +194,11 @@ class Fetcher:
                 if attempt == 2:
                     raise
             await asyncio.sleep(2 ** (attempt + 1))
+        if 400 <= r.status_code < 500 and r.status_code != 429:
+            self.refusals += 1
+            self.refusal = f"HTTP {r.status_code} {r.text[:150]}"
+        else:
+            self.refusals = 0
         r.raise_for_status()
         self.searches += 1
         return r.json()

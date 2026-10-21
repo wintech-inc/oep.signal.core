@@ -47,6 +47,7 @@ SNOWBALL_PAGES = 3      # list pages from one site search per in-market company
 MORE_PAGES = 5          # more pages of the same list, read one level deep
 PROBE_QUERIES = 12
 PROBE_PAGES = 3
+SERPER_REFUSALS = 25    # Serper client errors in a row that stop the run
 VERDICT_FIELDS = ["verdict", "rule", "reason", "evidence_url", *ROLE_FIELDS]
 # Paths on social sites that are not a company's page.
 SOCIAL_NON_PAGES = {"groups", "events", "watch", "marketplace", "share", "sharer", "sharer.php", "hashtag", "reel",
@@ -288,6 +289,7 @@ class Discovery:
         self.started = time.time()
         self.spend = Counter()   # tokens by model, LLM calls, dropped leads; searches come from the fetcher
         self.stopped_on_budget = False
+        self.stop_reason: str | None = None
         self.last_progress = 0.0
 
     async def __aenter__(self):
@@ -305,9 +307,14 @@ class Discovery:
                    + s["sonnet_in"] * PRICE_SONNET_IN + s["sonnet_out"] * PRICE_SONNET_OUT) / 1e6)
 
     def over_budget(self) -> bool:
+        """True once the run should start no new work: its budget is spent, or Serper keeps refusing searches
+        (for example when the account is out of credits), which would only record errors."""
         if self.cost() >= self.max_cost:
             self.stopped_on_budget = True
-        return self.stopped_on_budget
+        if self.fetcher.refusals >= SERPER_REFUSALS and not self.stop_reason:
+            self.stop_reason = f"Serper refused {self.fetcher.refusals} searches in a row: {self.fetcher.refusal}"
+            print(f"\n{self.stop_reason}. Stopping; run again once Serper works.", file=sys.stderr)
+        return self.stopped_on_budget or bool(self.stop_reason)
 
     def progress(self, text: str) -> None:
         if time.time() - self.last_progress < 1:
@@ -481,7 +488,7 @@ class Discovery:
             if url:
                 for lead in by_name[n]:
                     lead.url = url
-            elif not self.stopped_on_budget:
+            elif not self.over_budget():
                 self.state["unresolved"][n] = by_name[n][0].name
         for n, group in by_name.items():
             if n and n in self.names:
@@ -532,6 +539,11 @@ class Discovery:
         self.spend["haiku_in"] += r.get("input_tokens", 0) + (r.get("role_input_tokens") or 0)
         self.spend["haiku_out"] += r.get("output_tokens", 0) + (r.get("role_output_tokens") or 0)
         self.spend["classified"] += 1
+        if "serper.dev" in r.get("reason", "") and "Client error" in r.get("reason", ""):
+            self.fetcher.refusals += 1
+            self.fetcher.refusal = r["reason"][:200]
+        elif r["verdict"] != "error":
+            self.fetcher.refusals = 0
         if r["verdict"] != "error" and r.get("role") != "error":
             cache_put("verdicts", key, r)
         return r
@@ -644,11 +656,11 @@ class Discovery:
             await self.settle_round()
             self.save()
         for _ in range(rounds):
-            if self.stopped_on_budget:
+            if self.over_budget():
                 break
             stats = await self.round()
             self.save()
-            if self.stopped_on_budget or (not self.backlog() and should_stop(stats["new_in"], stats["total_in"])):
+            if self.over_budget() or (not self.backlog() and should_stop(stats["new_in"], stats["total_in"])):
                 break
         self.finish("discover")
 
@@ -659,7 +671,7 @@ class Discovery:
             "llm_errors": self.spend["llm_errors"], "search_errors": self.spend["search_errors"],
             "job_errors": self.spend["job_errors"],
             "cost": round(self.cost(), 2), "minutes": round((time.time() - self.started) / 60, 1),
-            "max_cost": self.max_cost, "stopped_on_budget": self.stopped_on_budget,
+            "max_cost": self.max_cost, "stopped_on_budget": self.stopped_on_budget, "stop_reason": self.stop_reason,
         })
         self.save()
 
@@ -781,7 +793,10 @@ def report(market: Market, state: dict) -> str:
 
     title = "Blind discovery run (no seed list)" if state["blind"] else "Discovery"
     lines = [f"# {title}: {market.name} (`{market.id}`)", ""]
-    if run.get("stopped_on_budget"):
+    if run.get("stop_reason"):
+        lines += [f"**This run stopped early: {run['stop_reason']}.** Run `signal discover` again once that is fixed; "
+                  "it continues where this run stopped.", ""]
+    elif run.get("stopped_on_budget"):
         lines += [f"**This run stopped on its budget (${run['max_cost']:.0f}) before finishing.** Work still due is "
                   f"listed under 'Left to do'; run `signal discover` again to continue.", ""]
     discovered = [c for c in ins if not c["seed"]]
@@ -889,11 +904,11 @@ def report(market: Market, state: dict) -> str:
               f"Queries with a next page due: {len(due)}. In-market companies not yet snowballed: {snow_left}. "
               f"Candidates not yet classified (or errors): {unclassified}.", ""]
 
-    lines += ["## Runs", "", "| Command | Sources | Searches | LLM calls | Classified | Cost | Minutes | Stopped on budget |",
+    lines += ["## Runs", "", "| Command | Sources | Searches | LLM calls | Classified | Cost | Minutes | Stopped early |",
               "|---|---|---|---|---|---|---|---|"]
     for r in state["runs"]:
         lines.append(f"| {r['command']} | {', '.join(r['sources'])} | {r['searches']} | {r['llm_calls']} | {r['classified']} | "
-                     f"${r['cost']:.2f} | {r['minutes']} | {'yes' if r['stopped_on_budget'] else 'no'} |")
+                     f"${r['cost']:.2f} | {r['minutes']} | {'Serper refused' if r.get('stop_reason') else 'budget' if r['stopped_on_budget'] else 'no'} |")
     lines += ["", f"Total candidates: {len(cands)}. Verdicts: "
               + ", ".join(f"{v} {n}" for v, n in Counter(c.get('verdict') for c in cands.values()).most_common()) + ".", ""]
     return "\n".join(lines)
