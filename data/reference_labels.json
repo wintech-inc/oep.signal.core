@@ -614,8 +614,8 @@
   {
     "company_id": "freedomcampers.com",
     "market_id": "pac_hunting_blinds",
-    "label": "out",
-    "note": "The URL you provided redirects to Redneck Blinds. I think Freedom Capers distributes blinds, they don't make them."
+    "label": "in",
+    "note": "The URL you provided redirects to Redneck Blinds. I think Freedom Capers distributes blinds, they don't make them. Relabeled IN on 2026-10-21: Tim ruled blind dealers IN for M1."
   },
   {
     "company_id": "hunter-companies.com",

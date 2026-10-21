@@ -203,9 +203,11 @@ uv run signal eval --market pac_poultry_houses
 - General building-materials distributors are OUT unless they show a poultry or ag program (see section 12).
 - Recall is favored over precision, with `unknown` kept separate.
 - Geography is ignored in M1.
+- After the reference review (2026-10-21): hunting blind dealers and retailers are IN, since a dealer leads to the builders and M1 prefers a false positive to a false negative. Waterfowl and duck blinds, including permanent hard-sided ones, are OUT.
 
 ## 12. Noted for later milestones
 
 - **Local supply stores in the poultry market.** Poultry house construction is ad hoc and decentralized. In rural Arkansas, a farm may hire a local contractor, who buys from whatever local supply store they know. An example is Overman Buildings / Overman's Discount Supply (https://overmanbuildings.com/overmansdiscountsupply/) in Pocahontas, Arkansas. Its website doesn't look like a poultry supplier, but it is exactly the kind of company PAC should approach about carrying its doors and windows. M1 deliberately leaves these OUT (rule B requires a visible poultry or ag program). A later milestone should decide how to find and judge them, probably by location rather than website content.
 - The hunting blind market should be easier to map than poultry houses, because blinds are mostly built by established companies rather than ad hoc contractors.
 - Customer vs. competitor vs. neither, including the distributor case (a distributor is both).
+- Refine hunting blind dealers: a dealer reselling a known brand (like Freedom Campers) is a weaker lead than one reselling local or Amish builders whose maker is unclear.
