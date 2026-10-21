@@ -1,0 +1,602 @@
+[
+  {
+    "company_id": "greengablecontracting.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "henningcompanies.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "spspoultry.com",
+    "market_id": "pac_poultry_houses",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "tidwellconstruction.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "g-msales.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "skconstructiononline.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "gpchardware.com",
+    "market_id": "pac_poultry_houses",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "farmerboyag.com",
+    "market_id": "pac_poultry_houses",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "smithpoultryalabama.com",
+    "market_id": "pac_poultry_houses",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "summitepc.com",
+    "market_id": "pac_poultry_houses",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "facebook.com/p/hometown-poultry-supply-inc-61554675076815",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "bowerag.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "poultryequipmentplus.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "goodmanclassic.com",
+    "market_id": "pac_poultry_houses",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "tristatepoultry.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "a1ag.com",
+    "market_id": "pac_poultry_houses",
+    "label": "both",
+    "note": "Their products page (https://a1ag.com/poultry/) lists several known competitors like L.B. White, Plyco, and Double L. I'm classifying as both since they do remodel work and could be reselling in addition to building."
+  },
+  {
+    "company_id": "neagri.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "premierepoultrysupply.net",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "midwestlivestock.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "kcepoultry.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "hostetlergroup.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "3nailag.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "ridgeline-sd.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "parrishequipment.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "agbuildings.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "midsouthcage.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "rrchristo.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "premieragsupply.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "michianaequipment.com",
+    "market_id": "pac_poultry_houses",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "lionheartconstructionllc.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "rlincva.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "facebook.com/heritagepoultrysupply",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "grandviewva.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "ozark-ag.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "gapoultry.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "potterspoultryusa.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "settje.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "epsbuildings.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "cencon.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "farmerspoultrysupply.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "heartlandbuilders.net",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "palsusa.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "marydelag.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "pennerfarmservice.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "borderstx.com",
+    "market_id": "pac_poultry_houses",
+    "label": "neither",
+    "note": "I'd like to make them a customer but don't see any website evidence so have to go \"neither\""
+  },
+  {
+    "company_id": "pilchuckconstruction.com",
+    "market_id": "pac_poultry_houses",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "zeisetequip.com",
+    "market_id": "pac_poultry_houses",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "jdmoutdoors.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "freedomcampers.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "driftlessoutdoorsllc.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "holcombbuildings.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "woodsmanninc.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "deerfeeder.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "amishblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "sportsmanscondo.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "clearsightoutdoors.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "ruggedrutblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "wilsonqualitymillwork.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "adirondackcorp.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "herculesoutdoors.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "blackdogfarmllc.org",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "southtexastripodsandfeeders.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "radixhunting.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "oakridgehuntingblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "360huntingblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "dillonmanuf.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "southernlegacydeerblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "blynd.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "ardisam.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "shadowhunterblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "shedsbyfisher.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "westexhuntingsupply.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "snaplockhuntingblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "topgameind.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "texaswildlifesupply.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "davisbuildingsinc.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "facebook.com/premierhuntingblinds",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "coonmfginc.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "huntingpods.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "rustictimbersinc.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "lazymanstands.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "maverickhunting.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "hbhuntingproducts.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "pottervillesawmill.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "fatboyblind.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "shedsbarnsgazebosamishbuiltbyfoote.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "neither",
+    "note": ""
+  },
+  {
+    "company_id": "penndutchstructures.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "eshutilitybuildings.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "phantomblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "bittercreekblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "facebook.com/p/a-grumpy-buck-hunting-blinds-100063662525377",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": ""
+  },
+  {
+    "company_id": "midcoproducts.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": "Midco is a known distributor, so this is likely someone else's window. Flagging them as both as a distributor."
+  },
+  {
+    "company_id": "shedwindowsandmore.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "huntorion.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "texasdeerstands.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": "They use their own windows/doors, but there is no evidence of them selling standalone windows and doors. We would be calling on them to see if they would like to outsource to us."
+  },
+  {
+    "company_id": "buckstophunting.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": "Yes, but if they're selling doors that other companies make then they're a distributor by definition which would make them \"both\" -- we would call on them to see if they are interested in offering our products as well"
+  },
+  {
+    "company_id": "titanblinds.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "texashunterproducts.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "advantageoutdoor.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "both",
+    "note": ""
+  },
+  {
+    "company_id": "procraftstructures.com",
+    "market_id": "pac_hunting_blinds",
+    "label": "customer",
+    "note": "The options page is just options for their own blinds -- they do not appear to be actively selling standalone doors or windows"
+  }
+]
