@@ -482,8 +482,8 @@
   {
     "company_id": "lazymanstands.com",
     "market_id": "pac_hunting_blinds",
-    "label": "customer",
-    "note": ""
+    "label": "both",
+    "note": "Relabeled both (Tim, 2026-10-21): sells its own window as a standalone product."
   },
   {
     "company_id": "maverickhunting.com",
