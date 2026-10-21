@@ -1,10 +1,10 @@
 # Eval: Hunting Blinds (`pac_hunting_blinds`)
 
-Reference set: 100 companies reviewed by Tim. Model: `claude-haiku-5-5`.
+Reference set: 100 companies reviewed by Tim. Rescored after relabeling TX Duck Blinds OUT (same verdicts as commit 0a6c6a6). Model: `claude-haiku-5-5`.
 
 | Measure | Result | Target | |
 |---|---|---|---|
-| Recall | 98% | ≥ 95% | met |
+| Recall | 100% | ≥ 95% | met |
 | Precision | 100% | ≥ 90% | met |
 | Unknown | 3% | ≤ 5% | met |
 | Cost per 1,000 | $1.47 | < $2.00 | met |
@@ -15,13 +15,11 @@ Errors (API or search failures): 0
 
 | | in | out | unknown | error |
 |---|---|---|---|---|
-| **in** | 45 | 1 | 0 | 0 |
-| **out** | 0 | 51 | 3 | 0 |
+| **in** | 45 | 0 | 0 | 0 |
+| **out** | 0 | 52 | 3 | 0 |
 
 ## Disagreements
 
-- **TX Duck Blinds** (https://txduckblinds.com/): label `in`, verdict `out`.
-  - TX Duck Blinds manufactures customized metal duck blinds (waterfowl/layout-style pit, skid, and floating blinds), which the market excludes, and its only deer blind mention is a discounted 6' hay bale deer blind listing with no evidence it builds hard-sided deer blinds or makes windows or doors for them. Evidence: https://txduckblinds.com/
 - **Cavco - Crouse** (https://r-anell.com/): label `out`, verdict `unknown`.
   - No usable evidence: no homepage text and no search results.
 - **Cavco Home Center** (https://cavcohomesburleson.com/): label `out`, verdict `unknown`.

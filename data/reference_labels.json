@@ -764,8 +764,8 @@
   {
     "company_id": "txduckblinds.com",
     "market_id": "pac_hunting_blinds",
-    "label": "in",
-    "note": ""
+    "label": "out",
+    "note": "Relabeled OUT on 2026-10-21: duck blinds are excluded, and the deer blind it lists is a hay bale blind with no doors or windows."
   },
   {
     "company_id": "westexhuntingsupply.com",
