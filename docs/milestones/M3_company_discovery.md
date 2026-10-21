@@ -1,6 +1,6 @@
 # M3: Company discovery
 
-Status: draft for discussion with Tim (M3 planning thread, 2026-10-21). Implementation happens in a separate thread.
+Status: agreed with Tim on 2026-10-21 in the M3 planning thread. Implementation happens in a separate thread.
 
 Background and definitions: [project_overview.md](../project_overview.md). The classifiers it feeds: [M1_market_classifier.md](M1_market_classifier.md) and [M2_role_classifier.md](M2_role_classifier.md).
 
