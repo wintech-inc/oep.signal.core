@@ -67,3 +67,4 @@ Lead generation: find potential customers, get their contact information, and ge
 | Milestone | Goal | Plan |
 |---|---|---|
 | M1 | Market classifier: does a company participate in a market as we define it? | [M1_market_classifier.md](milestones/M1_market_classifier.md) |
+| M2 | Role classifier: is an in-market company a possible customer, competitor, both, or neither? | [M2_role_classifier.md](milestones/M2_role_classifier.md) |
