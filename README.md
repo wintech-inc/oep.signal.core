@@ -30,6 +30,20 @@ uv run signal schema                                       # regenerate markets/
 uv run pytest
 ```
 
+## Usage (M2: customer or competitor)
+
+For companies the market screen marks `in`, a second stage decides whether each is a possible customer, a possible competitor, both, or neither, with an evidence URL for each yes. `signal classify` stays stage 1 only.
+
+```
+uv run signal role https://www.hogslat.com --market pac_poultry_houses   # both stages, one company
+uv run signal role --all --market pac_poultry_houses                     # both stages, whole list -> eval/roles_<market>.csv
+uv run signal review --roles --market pac_poultry_houses pac_hunting_blinds   # -> eval/review_roles_<market>.csv
+uv run signal freeze --roles --market pac_poultry_houses                 # reviewed sheet -> data/reference_roles.json
+uv run signal eval --roles --market pac_poultry_houses                   # customer/competitor recall and precision -> eval/results_roles_<market>.md
+```
+
+The role rule and prompt are in `prompts/classify_role.md`; the brief's `examples_in[].role` and `role_notes` feed it.
+
 Fetched pages and search results are cached in `.cache/` (git-ignored), so re-running after a brief or prompt change only costs the LLM calls. Delete `.cache/` to refetch.
 
 A market is defined entirely by its brief in `markets/`; the screening rule and prompt are in `prompts/screen_market.md`. Adding a market means adding a brief, not changing code.

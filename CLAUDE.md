@@ -28,7 +28,13 @@ uv run signal review --market <market_id>   # sample + screen -> eval/review_<ma
 uv run signal freeze --market <market_id>   # reviewed sheet -> data/reference_labels.json
 uv run signal eval --market <market_id>     # accuracy against the reference set
 uv run signal schema                        # after editing the Market model in src/signal_core/markets.py
+uv run signal role <url> --market <market_id>         # both stages: market, then customer/competitor role
+uv run signal review --roles --market <market_id>     # role reference set -> eval/review_roles_<market_id>.csv
+uv run signal freeze --roles --market <market_id>     # -> data/reference_roles.json
+uv run signal eval --roles --market <market_id>       # stage-2 accuracy against the role reference set
 ```
+
+Stage 1 (M1, `prompts/screen_market.md`) must not change when working on stage 2 (`prompts/classify_role.md`, `role.py`).
 
 Company websites, Serper, and the Anthropic API must be reachable, and keys must be in `.env`. Cloud sessions without that network access can run the unit tests only; run the commands on Tim's machine.
 

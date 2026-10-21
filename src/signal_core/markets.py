@@ -6,6 +6,7 @@ The Pydantic model here is the source of markets/schema.json
 
 import json
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -35,6 +36,8 @@ class Example(Strict):
     name: str
     url: str
     rule: str = Field(description="Rule(s) that make it IN: A, B, C, or a combination.")
+    role: Literal["customer", "competitor", "both"] | None = Field(
+        default=None, description="Its role to the supplier, shown as an example to the role classifier (M2).")
 
 
 class PacProduct(Strict):
@@ -57,6 +60,8 @@ class Market(Strict):
     end_product: EndProduct
     our_products: OurProducts
     notes: list[str] = Field(default_factory=list)
+    role_notes: list[str] = Field(
+        default_factory=list, description="Market-specific clarifications for the role classifier (M2), one sentence each.")
     examples_in: list[Example] = Field(default_factory=list)
     pac_products: list[PacProduct] = Field(default_factory=list)
     geography: Geography | None = None

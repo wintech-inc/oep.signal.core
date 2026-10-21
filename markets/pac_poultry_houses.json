@@ -50,18 +50,19 @@
     "Poultry growers and integrators that own or operate poultry houses are OUT.",
     "Feed, animal health, hatcheries, processing plants, egg brands, staffing, and the sale, financing, or insurance of poultry farms are OUT."
   ],
+  "role_notes": [],
   "examples_in": [
-    {"name": "Southern Poultry Solutions", "url": "https://southernpoultrysolutions.com", "rule": "B"},
-    {"name": "Reliable Poultry Supply", "url": "https://www.reliablepoultry.com", "rule": "B"},
-    {"name": "QC Supply", "url": "https://www.qcsupply.com", "rule": "B"},
-    {"name": "Hostetler (H3 Poultry)", "url": "https://h3poultry.com", "rule": "A"},
-    {"name": "Southern Ag Builders", "url": "https://southernagbuilders.com", "rule": "A"},
-    {"name": "Hog Slat", "url": "https://www.hogslat.com", "rule": "A, B and C"},
-    {"name": "L.B. White", "url": "https://www.lbwhite.com", "rule": "C"},
-    {"name": "Eagan Manufacturing", "url": "https://eaganmfg.com", "rule": "C"},
-    {"name": "Chore-Time", "url": "https://www.choretime.com", "rule": "C"},
-    {"name": "Double L Group", "url": "https://www.doublel.com", "rule": "C"},
-    {"name": "Plyco", "url": "https://www.plyco.com", "rule": "C"}
+    {"name": "Southern Poultry Solutions", "url": "https://southernpoultrysolutions.com", "rule": "B", "role": "customer"},
+    {"name": "Reliable Poultry Supply", "url": "https://www.reliablepoultry.com", "rule": "B", "role": "customer"},
+    {"name": "QC Supply", "url": "https://www.qcsupply.com", "rule": "B", "role": "customer"},
+    {"name": "Hostetler (H3 Poultry)", "url": "https://h3poultry.com", "rule": "A", "role": "customer"},
+    {"name": "Southern Ag Builders", "url": "https://southernagbuilders.com", "rule": "A", "role": "customer"},
+    {"name": "Hog Slat", "url": "https://www.hogslat.com", "rule": "A, B and C", "role": "both"},
+    {"name": "L.B. White", "url": "https://www.lbwhite.com", "rule": "C", "role": "competitor"},
+    {"name": "Eagan Manufacturing", "url": "https://eaganmfg.com", "rule": "C", "role": "competitor"},
+    {"name": "Chore-Time", "url": "https://www.choretime.com", "rule": "C", "role": "competitor"},
+    {"name": "Double L Group", "url": "https://www.doublel.com", "rule": "C", "role": "competitor"},
+    {"name": "Plyco", "url": "https://www.plyco.com", "rule": "C", "role": "competitor"}
   ],
   "pac_products": [
     {"name": "V21", "description": "vinyl window", "url": "https://www.pocahontasaluminum.com/windows-vinyl.php"},

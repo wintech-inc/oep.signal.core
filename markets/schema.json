@@ -53,6 +53,24 @@
           "description": "Rule(s) that make it IN: A, B, C, or a combination.",
           "title": "Rule",
           "type": "string"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "enum": [
+                "customer",
+                "competitor",
+                "both"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Its role to the supplier, shown as an example to the role classifier (M2).",
+          "title": "Role"
         }
       },
       "required": [
@@ -193,6 +211,14 @@
         "type": "string"
       },
       "title": "Notes",
+      "type": "array"
+    },
+    "role_notes": {
+      "description": "Market-specific clarifications for the role classifier (M2), one sentence each.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Role Notes",
       "type": "array"
     },
     "examples_in": {
