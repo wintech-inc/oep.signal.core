@@ -282,6 +282,9 @@ class Discovery:
         self.classifier = RoleClassifier(concurrency)
         self.fetcher = self.classifier.fetcher
         self.llm_limit = asyncio.Semaphore(concurrency)
+        # Units of work (a query page, a lead to resolve, a company to classify) start only when a slot is free,
+        # so the budget check at their start sees what the work before them spent.
+        self.slots = asyncio.Semaphore(2 * concurrency)
         self.started = time.time()
         self.spend = Counter()   # tokens by model, LLM calls, dropped leads; searches come from the fetcher
         self.stopped_on_budget = False
@@ -468,7 +471,8 @@ class Discovery:
 
         async def one(n):
             nonlocal done
-            url = None if self.over_budget() else await self.resolve(by_name[n][0])
+            async with self.slots:
+                url = None if self.over_budget() else await self.resolve(by_name[n][0])
             done += 1
             self.progress(f"resolving {done}/{len(to_resolve)} leads without a website")
             return n, url
@@ -511,8 +515,9 @@ class Discovery:
 
         async def one(c):
             nonlocal done
-            if not self.over_budget():
-                c.update({k: v for k, v in (await self.two_stage(c)).items() if k in VERDICT_FIELDS})
+            async with self.slots:
+                if not self.over_budget():
+                    c.update({k: v for k, v in (await self.two_stage(c)).items() if k in VERDICT_FIELDS})
             done += 1
             self.progress(f"classifying {done}/{len(pending)}")
 
@@ -537,12 +542,13 @@ class Discovery:
                 if c.get("verdict") == "in" and not c.get("location") and not c.get("located")]
 
         async def one(c):
-            if self.over_budget():
-                return
-            try:
-                places = (await self.fetcher.places(c["name"]))["results"]
-            except httpx.HTTPError:
-                return
+            async with self.slots:
+                if self.over_budget():
+                    return
+                try:
+                    places = (await self.fetcher.places(c["name"]))["results"]
+                except httpx.HTTPError:
+                    return
             c["located"] = True
             for p in places:
                 same_site = p["website"] and lead_url(p["website"]) and company_key(lead_url(p["website"])) == c["company_id"]
@@ -591,7 +597,8 @@ class Discovery:
         async def one(job):
             nonlocal done
             try:
-                leads = await job
+                async with self.slots:
+                    leads = await job
             except Exception as e:   # one failed job must not lose the round
                 self.spend["job_errors"] += 1
                 print(f"\njob failed: {type(e).__name__}: {e}"[:300], file=sys.stderr)
