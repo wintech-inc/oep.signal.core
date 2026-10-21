@@ -1,6 +1,6 @@
 # M2: Role classifier (customer vs. competitor)
 
-Status: draft, under discussion with Tim in the M2 planning thread (2026-10-21). Implementation happens in a separate thread.
+Status: agreed with Tim on 2026-10-21 in the M2 planning thread. Implementation happens in a separate thread.
 
 Background and definitions: [project_overview.md](../project_overview.md). The first stage: [M1_market_classifier.md](M1_market_classifier.md).
 
@@ -10,7 +10,7 @@ For a company that the M1 market classifier marks `in`, answer a second question
 
 > From {supplier}'s point of view, is this company a **possible customer**, a **possible competitor**, **both**, or **neither**?
 
-The answer comes with a one-sentence reason and the URL of the evidence used.
+The answer comes with a short reason and, for each yes, the URL of the evidence behind it. Every role must be evidence backed: when SIGNAL later has a database, it should be able to show the page that made a company a customer and the page that made it a competitor.
 
 SIGNAL is now a two-stage engine:
 
@@ -32,7 +32,7 @@ PAC and WinTech make doors and windows that other companies build into an end pr
 - **Possible customer:** a company that could buy our products. It builds the end product (and so chooses its door and window vendors), or it resells components for the end product to the companies that build, equip, or maintain it.
 - **Possible competitor:** a company that sells products like ours into this market. It makes or sells {our_products.category} for {end_product.name}s.
 - **Both:** both of the above. The common case is a distributor that carries other makers' doors or windows: sales must decide whether to sell through it or go around it.
-- **Neither:** in the market, but it neither buys nor sells products like ours. For example a company that M1 let through on suggestive evidence, or (pending Tim's decision) a dealer that resells finished end products.
+- **Neither:** in the market, but it neither buys nor sells products like ours. Examples: a dealer that resells finished end products, or a company that M1 let through on suggestive evidence. `neither` doesn't remove a company from the record; it is still shown to sales as a market participant. It only means it doesn't match the customer or competitor definition.
 
 These definitions follow the project overview and the original briefs. Checked against the competitors Tim named there:
 
@@ -44,11 +44,11 @@ These definitions follow the project overview and the original briefs. Checked a
 | Deer blind window makers: Original Deer Blind Window Co., Deerview, Kudu, Elusive Wildlife | no | yes | competitor |
 | Ranch King, Antler Shed, Boss Game Systems (blinds) | yes: build blinds | no | customer |
 
-### Decisions pending with Tim
+### Decisions made in planning
 
-1. **Distributors.** Recommended: a distributor is `both` only when it sells doors or windows like ours, and `customer` otherwise. (The alternative is to treat every distributor as `both`, as the project overview's definition reads.)
-2. **Hunting blind dealers** that resell finished blinds (IN under M1, section 11 of the M1 plan). Recommended: `neither`. They stay in the market as a route to the builders, but they don't buy windows or doors.
-3. **Builders that make their own doors or windows in-house.** Recommended: `customer` only, unless they also sell doors or windows to others (then `both`).
+1. **Distributors** are `both` only when the evidence shows they carry doors or windows like ours, and `customer` otherwise. Being a distributor is too weak a basis for calling a company a competitor; the competitor answer must point to evidence. "Doesn't carry doors yet" is also a useful lead signal. (This narrows the project overview's "a distributor is both".)
+2. **Hunting blind dealers** that resell finished blinds (IN under M1, section 11 of the M1 plan) are `neither`. They stay in the market and are still shown to sales, but they don't buy or sell windows or doors. This may be refined later.
+3. **Builders that make their own doors or windows in-house** are `customer` only, unless they also sell doors or windows to others (then `both`). They are still customers: the pitch is "we'll make the windows so you can focus on building blinds."
 
 ### The rule as the prompt states it
 
@@ -69,7 +69,7 @@ The rule lives once, in `prompts/classify_role.md`, filled from the brief like M
 >
 > When the evidence suggests the company is a customer but doesn't prove it, answer yes. Answer competitor yes only when the evidence shows it makes or sells {our_products.category}.
 
-The prompt then adds the brief's end product description, `our_products.terms`, the `role_notes`, the role-tagged examples, and the evidence. (The wording above encodes the recommended answers to the pending decisions and will be adjusted to whatever Tim decides.)
+The prompt then adds the brief's end product description, `our_products.terms`, the `role_notes`, the role-tagged examples, and the evidence.
 
 **Why two yes/no answers rather than one four-way pick:** each yes/no is a concrete question about what the company does, which is easier for a small model to get right and easier to check in a review. The four roles follow mechanically: `both` if both are yes, `customer` or `competitor` if one is, `neither` if neither is.
 
@@ -79,7 +79,7 @@ The prompt then adds the brief's end product description, `our_products.terms`, 
 classify_role(company, market):
     evidence = M1 evidence (cached)  +  product_search(company, market)    # one new Serper query, cached
     answer   = one Claude Haiku 5.5 call(role rule + brief + evidence)     # structured JSON out
-    return answer   # {customer: bool, competitor: bool, role, reason, evidence_url}
+    return answer   # {customer, competitor, role, reason, customer_evidence_url, competitor_evidence_url}
 ```
 
 **Evidence.** Stage 2 reuses everything stage 1 fetched (homepage text and the M1 site search), which comes from `.cache/` at no cost. It adds one Serper query per company and market: `site:<domain>` plus only the `our_products.terms`, OR'ed (for Facebook and Instagram pages, `"<company name>"` instead of `site:`, as in M1). The M1 query mixes end-product and product terms, is capped at 32 words (so later product terms are dropped for poultry), and keeps 10 results, so door and window pages are easily crowded out. The competitor question depends on exactly those pages, so they get their own query.
@@ -88,21 +88,23 @@ classify_role(company, market):
 
 ```python
 class RoleAnswer(BaseModel):
-    reason: str               # one or two sentences: what it does that makes it a customer, competitor, both, or neither
+    reason: str                         # one or two sentences: what it does that makes it a customer, competitor, both, or neither
     customer: bool
+    customer_evidence_url: str | None   # the page that shows it builds the end product or resells components
     competitor: bool
-    evidence_url: str | None
+    competitor_evidence_url: str | None # the page that shows it makes or sells doors or windows
 ```
 
-`role` is derived in code from the two booleans. There is no `unknown` in stage 2: stage 1 already saw usable evidence, and "no evidence of selling doors or windows" is simply `competitor: false`.
+`role` is derived in code from the two booleans. A yes without an evidence URL from the evidence given is treated as a weak answer: the eval report counts these, and the prompt tells the model to give the URL for every yes. There is no `unknown` in stage 2: stage 1 already saw usable evidence, and "no evidence of selling doors or windows" is simply `competitor: false`.
 
 **Pipeline.** `classify_two_stage(company, market)` runs stage 1; if the verdict is `in`, it runs stage 2 and merges the answers into one record:
 
 ```json
 {"company_id": "hogslat.com", "market_id": "pac_poultry_houses",
  "verdict": "in", "rule": "A", "reason": "...", "evidence_url": "...",
- "role": "both", "customer": true, "competitor": true,
- "role_reason": "...", "role_evidence_url": "https://www.hogslat.com/tego-tunnel-door-cool-cell"}
+ "role": "both", "role_reason": "...",
+ "customer": true, "customer_evidence_url": "https://www.hogslat.com/...",
+ "competitor": true, "competitor_evidence_url": "https://www.hogslat.com/tego-tunnel-door-cool-cell"}
 ```
 
 For companies that are `out`, `unknown`, or `error` in stage 1, the role fields are empty.
@@ -120,7 +122,7 @@ Proposed values (from `docs/sample_brief_*.md`):
 
 - Poultry: Southern Poultry Solutions, Reliable Poultry Supply, QC Supply, Hostetler, Southern Ag Builders → `customer`; Hog Slat → `both`; L.B. White, Eagan, Chore-Time, Double L Group, Plyco → `competitor`.
 - Hunting blinds: Ranch King, The Antler Shed, Boss Game Systems, Atascosa → `customer`; the four window makers → `competitor`.
-- `role_notes` start empty for both markets. If Tim decides blind dealers are customers, that goes in the blinds brief's `role_notes`, not in code.
+- `role_notes` start empty for poultry. The blinds brief gets one: "Dealers and retailers that only resell finished hunting blinds are neither customers nor competitors." (The shared rule already says this; the note is there because the M1 blinds brief calls dealers IN, and the model should not read that as customer.)
 
 The Pydantic model and `markets/schema.json` gain the two optional fields (`signal schema`).
 
@@ -143,7 +145,7 @@ Stage 2 is measured on its own, on companies already known to be in the market, 
 
 The brief's examples stay out of the reference set, since they appear in the prompt.
 
-**Review.** `signal review --roles --market <id>` writes `eval/review_roles_<market>.csv` with name, URL, stage-1 reason, stage-2 role, reason, evidence URL, and an empty `label` (customer, competitor, both, neither, skip) and `note`. About 70 rows per market; most are quick confirmations. The labels go into `data/reference_roles.json` (`{company_id, market_id, label, note}`) with `signal freeze --roles`. The review page used for M1 can be reused.
+**Review.** `signal review --roles --market <id>` writes `eval/review_roles_<market>.csv` with name, URL, stage-1 reason, stage-2 role, reason, both evidence URLs, and an empty `label` (customer, competitor, both, neither, skip) and `note`. About 70 rows per market; most are quick confirmations. The labels go into `data/reference_roles.json` (`{company_id, market_id, label, note}`) with `signal freeze --roles`. The review page used for M1 can be reused.
 
 **Measures.** `signal eval --roles --market <id>` runs stage 2 on the reference set and reports:
 
@@ -151,6 +153,7 @@ The brief's examples stay out of the reference set, since they appear in the pro
 - competitor recall and precision (treating `competitor` and `both` as competitor: yes);
 - exact-role accuracy and a 4×4 confusion matrix;
 - the disagreements with reasons and evidence links;
+- yes answers without an evidence URL;
 - cost per 1,000.
 
 **Acceptance targets** per market (may be revisited after the first results, especially where competitor counts are small):
@@ -208,10 +211,10 @@ As with M1, real runs need company websites, Serper, and the Anthropic API, so t
 2. `prompts/classify_role.md`, the product search, `role.py`, and the `role` command.
 3. The role review sheets, the reference set reviewed with Tim, `data/reference_roles.json`.
 4. `signal eval --roles` and a results summary against the targets, for both markets.
-5. README, CLAUDE.md commands, and the milestone table in `docs/project_overview.md` updated.
+5. README and CLAUDE.md commands updated.
 
 ## 10. Noted for later milestones
 
-- Finer roles for distributors (sell through vs. go around) and for dealers of finished products.
+- Finer roles for distributors (sell through vs. go around) and for dealers of finished products (a dealer of local or Amish builders may be a route to customers).
 - Whether large equipment makers that make doors (Chore-Time, L.B. White) could also be OEM customers for our doors.
 - Product-gap analysis: competitor product lists compared with PAC's (`pac_products`).
