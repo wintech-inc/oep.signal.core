@@ -10,13 +10,13 @@ That is **7.6x** the 147 in-market companies on the seed list. 984 of them are n
 
 ## Floor: re-finding the seed list
 
-Re-found 136 of the 147 in-market seed companies (93%) without the seed list. 3 of those re-found were judged differently this time (M1 run-to-run variance, not a discovery miss).
+Re-found 137 of the 147 in-market seed companies (93%) without the seed list (1 of them under another page with the same name). Of those, 1 were judged differently this time (M1 run-to-run variance or different evidence on the other page, not a discovery miss) and 2 are not classified yet.
 
-Missed (never surfaced by any source):
+Missed (not found by any source under its URL or its exact name):
 
 - Country Tyme Sheds (`countrytymesheds.com`)
-- EZ Hunting Blinds (`ezhuntingblinds.com`)
 - EZ Hunt & Haul (`facebook.com/ezhunthaul`)
+- EZ Hunting Blinds (`ezhuntingblinds.com`)
 - Homestead Barns, LLC (`homesteadbarnsllc.com`)
 - Kendall Cabin Company (`kendallcabin.com`)
 - Pa Pa Jess (`papajess.com`)
@@ -24,13 +24,14 @@ Missed (never surfaced by any source):
 - Stansell Field Stand Co. (`stansellfieldstandco.com`)
 - WMD Mfg (Trophy Blinds) (`wmd-mfg.com`)
 - Woodsmann Inc (`woodsmanninc.com`)
-- Yoder Blinds (`yoderblinds.com`)
 
-Re-found but judged differently this run:
+Re-found under another page:
 
-- Amish Backyard Structures (`amishbackyardstructures.com`): unknown. Amish Backyard Structures builds and sells sheds, garages, pavilions, animal shelters, and outdoor furniture; the only hunting-related hit is a Project Gallery page mentioning 'hunting blind' with no evidence it builds hard-sided hunting blinds, sells blind components, or makes blind windows or doors.
-- General Shelters of Texas (`generalshelters.com`): None. 
-- The Shooting House (`theshootinghousellc.com`): None. 
+- Yoder Blinds (`yoderblinds.com`) as `instagram.com/yoderblinds`: in. Yoder Blinds' social posts show hunting blinds it sells or makes, such as a 6x6 insulated deer blind and a 6x6 octagon hunting blind, and a 'My creation' post suggests it builds them; this is suggestive rather than conclusive, so it leans IN under rule A.
+
+Re-found but judged differently:
+
+- Amish Backyard Structures (`amishbackyardstructures.com`) as `amishbackyardstructures.com`: unknown. Amish Backyard Structures builds and sells sheds, garages, pavilions, animal shelters, and outdoor furniture; the only hunting-related hit is a Project Gallery page mentioning 'hunting blind' with no evidence it builds hard-sided hunting blinds, sells blind components, or makes blind windows or doors.
 
 ## By source
 
@@ -79,7 +80,7 @@ Towns searched with nearby queries: 387.
 
 ## By state
 
-Location known for 551 of 1121 in-market companies. Outside the search locations (shown, not filtered): 1.
+Location known for 551 of 1121 in-market companies. Outside the search locations (shown, not filtered): 1. Likely outside the US by location or country domain (marked in the leads sheet, not filtered): 1.
 
 TX 96, PA 47, OH 33, WI 33, MI 32, MN 24, MO 24, KY 20, LA 20, AL 16, NY 16, NC 14, AR 13, IL 13, IA 12, MS 12, TN 12, KS 11, VA 9, GA 8, IN 8, ND 8, NE 8, OK 8, SC 8, FL 6, ME 5, WV 5, CT 3, MD 3, MT 3, NH 3, NJ 3, CA 2, CO 2, SD 2, VT 2, WA 2, WY 2, OR 1, QC 1, UT 1
 

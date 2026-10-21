@@ -36,6 +36,7 @@ uv run signal queries --market <market_id>            # first version of markets
 uv run signal discover --market <market_id>           # discovery (M3) -> data/discovery/, eval/leads_*, eval/discovery_*.md
 uv run signal discover --market <market_id> --no-seeds   # blind run: must re-find the seed list's in-market companies
 uv run signal probe --market <market_id>              # fresh-eyes completeness check -> eval/probe_<market_id>.md
+uv run signal report --market <market_id>             # rewrite discovery report + leads sheet from stored state, no new searches
 uv run signal review|freeze|eval --discovered --market <market_id>   # spot check of M1 on discovered companies
 ```
 

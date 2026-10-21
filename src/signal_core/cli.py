@@ -266,6 +266,16 @@ def cmd_discover(args):
           + ", ".join(str(p.relative_to(ROOT)) for p in paths))
 
 
+def cmd_report(args):
+    """Rewrite the discovery report (and leads sheet) from the stored market list, without searching."""
+    for market_id in args.market:
+        market = load_market(market_id)
+        if not dc.load_state(market.id, args.no_seeds):
+            raise SystemExit(f"No discovery run for {market.id}{' (--no-seeds)' if args.no_seeds else ''}")
+        paths = _write_discovery_outputs(market, args.no_seeds)
+        print("Written: " + ", ".join(str(p.relative_to(ROOT)) for p in paths))
+
+
 async def _probe(market, args):
     async with dc.Discovery(market, max_cost=args.max_cost) as discovery:
         return await discovery.probe(seed=args.seed)
@@ -347,6 +357,11 @@ def main():
     p.add_argument("--max-cost", type=float, default=dc.MAX_COST, help="Stop starting new work at this estimated spend (USD)")
     p.add_argument("--reclassify", action="store_true", help="Ignore stored verdicts and classify again")
     p.set_defaults(func=cmd_discover)
+
+    p = sub.add_parser("report", help="Rewrite discovery reports and leads sheets from data/discovery/ (no searching)")
+    p.add_argument("--market", required=True, nargs="+")
+    p.add_argument("--no-seeds", action="store_true", help="The blind run's report")
+    p.set_defaults(func=cmd_report)
 
     p = sub.add_parser("probe", help="Fresh-eyes completeness check: new searches, share already on the list")
     p.add_argument("--market", required=True)

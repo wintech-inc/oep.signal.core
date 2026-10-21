@@ -10,20 +10,23 @@ That is **7.3x** the 63 in-market companies on the seed list. 403 of them are no
 
 ## Floor: re-finding the seed list
 
-Re-found 58 of the 63 in-market seed companies (92%) without the seed list. 2 of those re-found were judged differently this time (M1 run-to-run variance, not a discovery miss).
+Re-found 59 of the 63 in-market seed companies (94%) without the seed list (1 of them under another page with the same name). Of those, 2 were judged differently this time (M1 run-to-run variance or different evidence on the other page, not a discovery miss) and 1 are not classified yet.
 
-Missed (never surfaced by any source):
+Missed (not found by any source under its URL or its exact name):
 
-- Apple Outdoor Supply (`appleoutdoorsupply.com`)
 - DCA Construction, Inc. (`dca-construction.com`)
 - Expi-Door (`expidoor.com`)
 - Heritage Poultry LLC. (`facebook.com/heritagepoultrysupply`)
 - Tidwell Construction (`tidwellconstruction.com`)
 
-Re-found but judged differently this run:
+Re-found under another page:
 
-- GPC POULTRY SUPPLY & HARDWARE (`gpchardware.com`): out. GPC Poultry Supply & Hardware is a local hardware store and lumber yard selling feed, fertilizer, power tools, roofing, plumbing, and propane, with poultry farming supplies only as its historical roots; there is no evidence it sells poultry-house-specific components, builds poultry houses, or makes poultry doors or windows.
-- Prime Building (`primebldg.com`): None. 
+- Apple Outdoor Supply (`appleoutdoorsupply.com`) as `facebook.com/appleoutdoorsupply`: out. Apple Outdoor Supply sells shed windows, shutters, and window/door parts for sheds, playhouses, and backyard chicken coops via Amazon and Walmart, with no evidence it builds commercial poultry houses or sells doors/windows specifically for commercial poultry houses; its 'poultry house slats' mention is a small item in a catalog and the products are consumer outdoor-building parts.
+
+Re-found but judged differently:
+
+- GPC POULTRY SUPPLY & HARDWARE (`gpchardware.com`) as `gpchardware.com`: out. GPC Poultry Supply & Hardware is a local hardware store and lumber yard selling feed, fertilizer, power tools, roofing, plumbing, and propane, with poultry farming supplies only as its historical roots; there is no evidence it sells poultry-house-specific components, builds poultry houses, or makes poultry doors or windows.
+- Apple Outdoor Supply (`appleoutdoorsupply.com`) as `facebook.com/appleoutdoorsupply`: out. Apple Outdoor Supply sells shed windows, shutters, and window/door parts for sheds, playhouses, and backyard chicken coops via Amazon and Walmart, with no evidence it builds commercial poultry houses or sells doors/windows specifically for commercial poultry houses; its 'poultry house slats' mention is a small item in a catalog and the products are consumer outdoor-building parts.
 
 ## By source
 
