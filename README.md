@@ -55,6 +55,7 @@ uv run signal discover --market pac_hunting_blinds --no-seeds # blind run withou
 uv run signal discover --market pac_hunting_blinds --sources maps,nearby   # a subset of sources (default: all)
 uv run signal probe --market pac_hunting_blinds               # fresh-eyes completeness check -> eval/probe_<market>.md
 uv run signal report --market pac_hunting_blinds              # rewrite the discovery report and leads sheet from stored state (no searching)
+uv run signal discover --market pac_hunting_blinds --recheck --rounds 0   # after a prompt change: classify the in-market companies again, nothing else
 uv run signal review --discovered --market pac_hunting_blinds # spot-check sheet -> eval/review_discovery_<market>.csv
 uv run signal freeze --discovered --market pac_hunting_blinds # -> data/reference_discovery.json
 uv run signal eval --discovered --market pac_hunting_blinds   # spot-check precision -> eval/results_discovery_<market>.md

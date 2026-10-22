@@ -292,8 +292,9 @@ def fresh_state(market_id: str, blind: bool) -> dict:
 
 class Discovery:
     def __init__(self, market: Market, blind: bool = False, sources: set[str] = set(SOURCES),
-                 max_cost: float = MAX_COST, reclassify: bool = False, concurrency: int = 16):
+                 max_cost: float = MAX_COST, reclassify: bool = False, recheck: bool = False, concurrency: int = 16):
         self.market, self.blind, self.max_cost, self.reclassify = market, blind, max_cost, reclassify
+        self.recheck = recheck
         self.sources = sources - {"seed"} if blind else sources
         self.queries = load_queries(market.id)
         self.state = load_state(market.id, blind) or fresh_state(market.id, blind)
@@ -671,7 +672,12 @@ class Discovery:
 
     async def run(self, rounds: int = ROUNDS) -> None:
         """Rounds until one adds under STOP_SHARE new in-market companies. Candidates a budget stop left
-        unclassified are classified first, before any new searching (`--rounds 0` does only that)."""
+        unclassified are classified first, before any new searching (`--rounds 0` does only that).
+        With `recheck`, in-market companies go back into that backlog to be classified under the current prompts."""
+        if self.recheck:
+            for c in self.candidates.values():
+                if c.get("verdict") == "in":
+                    c["verdict"] = None
         if self.backlog():
             print(f"{self.market.id}: classifying {self.backlog()} candidates left from the last run", file=sys.stderr)
             await self.settle_round()

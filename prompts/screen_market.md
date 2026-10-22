@@ -17,6 +17,8 @@ Otherwise the company is **OUT**. In particular, these are OUT unless they also 
 - dealers and retailers that resell finished {end_product.name}s to end users;
 - companies in the broader industry that are not tied to {end_product.name}s.
 
+A company based outside the market's geography is also **OUT**, whatever it does (see Geography below).
+
 If the evidence doesn't show what the company does, answer **UNKNOWN**. When the evidence is suggestive but not conclusive, lean toward IN.
 
 # The end product: {end_product.name}
@@ -25,6 +27,12 @@ If the evidence doesn't show what the company does, answer **UNKNOWN**. When the
 
 Not included:
 {not_included}
+
+# Geography
+
+{geography}
+
+Judge where the company is based from the evidence: its address, phone numbers, domain, language, and where it says it works. A company with its own office, branch, or subsidiary inside the geography counts as based there. If the evidence doesn't show where it is based, don't let geography decide the verdict.
 
 # Products like ours
 

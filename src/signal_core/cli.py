@@ -254,7 +254,7 @@ async def _discover(market, args):
     if unknown:
         raise SystemExit(f"Unknown sources: {', '.join(sorted(unknown))}. Sources: {', '.join(dc.SOURCES)}")
     async with dc.Discovery(market, blind=args.no_seeds, sources=sources, max_cost=args.max_cost,
-                            reclassify=args.reclassify) as discovery:
+                            reclassify=args.reclassify, recheck=args.recheck) as discovery:
         await discovery.run(args.rounds)
 
 
@@ -356,6 +356,8 @@ def main():
                    help="Most rounds in this run (0: only classify what the last run left unclassified)")
     p.add_argument("--max-cost", type=float, default=dc.MAX_COST, help="Stop starting new work at this estimated spend (USD)")
     p.add_argument("--reclassify", action="store_true", help="Ignore stored verdicts and classify again")
+    p.add_argument("--recheck", action="store_true",
+                   help="Classify in-market companies again under the current prompts (after a prompt change); with --rounds 0, nothing else")
     p.set_defaults(func=cmd_discover)
 
     p = sub.add_parser("report", help="Rewrite discovery reports and leads sheets from data/discovery/ (no searching)")

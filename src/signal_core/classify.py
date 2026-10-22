@@ -41,6 +41,7 @@ def system_prompt(market_id: str) -> str:
         not_included=_bullets(market.end_product.not_included),
         our_terms=", ".join(market.our_products.terms),
         notes=_bullets(market.notes),
+        geography=market.geography.note if market.geography else "Anywhere.",
         examples=_bullets([f"{e.name} ({e.url}): IN under rule {e.rule}" for e in market.examples_in]),
     )
 
