@@ -20,10 +20,10 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from signal_core.companies import company_key, is_social
+from signal_core.companies import is_social
 from signal_core.discover import (
-    CONTACT_FIELDS, EVAL_DIR, STATE_CODES, US_STATES, Discovery, display_name, lead_url, parse_town, same_place,
-    state_of, write_leads,
+    CONTACT_FIELDS, EVAL_DIR, STATE_CODES, US_STATES, Discovery, display_name, lead_url, norm_name, parse_town,
+    same_place, state_of, write_leads,
 )
 from signal_core.markets import LEAD_ROLES, ROLES, ROOT, Market
 from signal_core.role import role_url
@@ -62,15 +62,28 @@ def split_address(address: str | None) -> dict:
     return out
 
 
+def is_deep(url: str) -> bool:
+    """A page below a site's root, which discovery may have found on another site (a news article, a dealer's
+    product page) rather than on the company's own."""
+    return not is_social(url) and bool(urlsplit(url).path.strip("/"))
+
+
 def homepage(url: str, listing_website: str | None = None) -> str:
-    """Own domain: https:// plus the host, no path. A social page: the page itself, unless its map listing
-    gives the company's own website."""
-    if not is_social(url):
+    """The company's homepage, https:// plus the host with no path. A social page or a deep page gives way to
+    the website on the company's map listing; without one, it is kept as it is, since it at least leads to
+    the company and its host may be someone else's site."""
+    if not is_social(url) and not is_deep(url):
         return f"https://{urlsplit(url).hostname}"
     site = lead_url(listing_website)
     if site and not is_social(site):
         return f"https://{urlsplit(site).hostname}"
     return lead_url(url) or url
+
+
+def is_supplier(name: str, supplier: str) -> bool:
+    """True for the brief's supplier itself (discovery can find our own pages)."""
+    ours = norm_name(supplier.split("(")[0])
+    return bool(ours) and ours in norm_name(name)
 
 
 def phone_digits(phone: str | None) -> str:
@@ -93,9 +106,10 @@ def contact(places: list[dict], company_id: str, names: list[str], known_state: 
     return {**dict.fromkeys(CONTACT_FIELDS, ""), "town": None, "query": query}
 
 
-def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[str, str]]]:
-    """Rows with the same phone number or the same homepage are one company (typically its Facebook page and
-    its website). The own-domain row is kept, with blank contact fields filled from the others.
+def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dict]]]:
+    """Rows with the same homepage, or the same phone number and names that contain one another, are one
+    company (typically its Facebook page and its website). A phone number alone is not enough: dealers and
+    sister companies share numbers. The own-site row is kept, with blank contact fields filled from the others.
     Returns the kept rows, in order, and (kept, dropped) row pairs."""
     parent = list(range(len(rows)))
 
@@ -105,17 +119,24 @@ def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[str, str]
             i = parent[i]
         return i
 
-    first: dict[tuple, int] = {}
+    by_home: dict[str, int] = {}
+    by_phone: dict[str, list[int]] = {}
     for i, r in enumerate(rows):
-        for key in (("phone", phone_digits(r["Phone"])), ("home", company_key(r["Homepage"]))):
-            if key[1]:
-                parent[find(i)] = find(first.setdefault(key, i))
+        home = r["Homepage"].split("://")[-1].removeprefix("www.").rstrip("/").lower()
+        parent[find(i)] = find(by_home.setdefault(home, i))
+        if phone := phone_digits(r["Phone"]):
+            a = norm_name(r["Company"])
+            for j in by_phone.setdefault(phone, []):
+                b = norm_name(rows[j]["Company"])
+                if a and b and (a in b or b in a):
+                    parent[find(i)] = find(j)
+            by_phone[phone].append(i)
     groups: dict[int, list[int]] = {}
     for i in range(len(rows)):
         groups.setdefault(find(i), []).append(i)
     kept, merged = [], []
     for members in groups.values():
-        best = min(members, key=lambda i: (is_social(rows[i]["_url"]), i))
+        best = min(members, key=lambda i: (is_social(rows[i]["_url"]), is_deep(rows[i]["_url"]), i))
         row = rows[best]
         for i in members:
             if i == best:
@@ -187,6 +208,9 @@ async def export(market: Market, max_cost: float = MAX_COST) -> dict:
     order = {r: i for i, r in enumerate(ROLES)}
     ready = sorted((c for c in ins if c.get("role") in ROLES and c.get("role_version") == d.role_version),
                    key=lambda c: (order[c["role"]], state_of(c.get("location")) or "~", display_name(c).lower()))
+    not_ready = len(ins) - len(ready)
+    ours = {c["company_id"] for c in ready if is_supplier(display_name(c), market.supplier)}
+    ready = [c for c in ready if c["company_id"] not in ours]
     rows, merged = merge_duplicates([crm_row(market, c) for c in ready])
     paths = {"crm": EXPORTS_DIR / f"crm_{market.id}.csv", "leads": write_leads(market.id, d.state),
              "report": EVAL_DIR / f"export_{market.id}.md", "contacts": EVAL_DIR / f"review_contacts_{market.id}.csv"}
@@ -194,8 +218,8 @@ async def export(market: Market, max_cost: float = MAX_COST) -> dict:
     filled = [r for r in rows if r["Phone"] or r["City"]]
     sample = random.Random(SEED).sample(filled, min(SPOT_CHECK, len(filled)))
     write_csv(paths["contacts"], CONTACT_SHEET_COLUMNS, [{**r, "maps_url": r["_maps"]} for r in sample])
-    summary = {"market": market, "rows": rows, "merged": merged, "gated": before - len(ins),
-               "not_ready": len(ins) - len(ready), "cost": cost, "stopped": d.stopped_on_budget or bool(d.stop_reason)}
+    summary = {"market": market, "rows": rows, "merged": merged, "gated": before - len(ins), "ours": len(ours),
+               "not_ready": not_ready, "cost": cost, "stopped": d.stopped_on_budget or bool(d.stop_reason)}
     paths["report"].write_text(export_report(summary, paths))
     return {**summary, "paths": paths}
 
@@ -232,6 +256,7 @@ def export_report(s: dict, paths: dict) -> str:
         f"`{paths['contacts'].relative_to(ROOT)}`.", "",
         "## Not exported", "",
         f"- Found by the map lookup to be based outside the market's geography: {s['gated']}.",
+        f"- {market.supplier} itself (pages discovery found under its name): {s['ours']}.",
         f"- In the market but without a role from the current stage-2 prompt (budget stop or errors; run again): "
         f"{s['not_ready']}.", "",
         "## Duplicates merged", "",

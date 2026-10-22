@@ -1,4 +1,4 @@
-from signal_core.export import contact, homepage, merge_duplicates, phone_digits, split_address
+from signal_core.export import contact, homepage, is_supplier, merge_duplicates, phone_digits, split_address
 
 
 def test_split_address():
@@ -12,11 +12,19 @@ def test_split_address():
 
 
 def test_homepage():
-    assert homepage("https://www.ranchkingblinds.com/blinds/x") == "https://www.ranchkingblinds.com"
+    assert homepage("https://www.ranchkingblinds.com/") == "https://www.ranchkingblinds.com"
     assert homepage("http://acme.com/") == "https://acme.com"
     assert homepage("https://facebook.com/AcmeBlinds") == "https://facebook.com/AcmeBlinds"
     assert homepage("https://facebook.com/AcmeBlinds", "https://acmeblinds.com/?utm_source=gmb") == "https://acmeblinds.com"
     assert homepage("https://facebook.com/AcmeBlinds", "https://www.facebook.com/AcmeBlinds/") == "https://facebook.com/AcmeBlinds"
+    # A deep page may be someone else's site: the listing's website wins, else the page itself is kept.
+    assert homepage("https://news.com/2024/acme-opens", "http://www.acmeblinds.com/home") == "https://www.acmeblinds.com"
+    assert homepage("https://news.com/2024/acme-opens") == "https://news.com/2024/acme-opens"
+
+
+def test_is_supplier():
+    assert is_supplier("Pocahontas Aluminum", "Pocahontas Aluminum (PAC)")
+    assert not is_supplier("Pocahontas Poultry Supply", "Pocahontas Aluminum (PAC)")
 
 
 def test_contact_takes_the_matching_listing_only():
@@ -35,17 +43,18 @@ def row(company, url, home, phone="", city=""):
             "ZIP": "", "_url": url}
 
 
-def test_merge_duplicates_keeps_the_own_domain_row():
+def test_merge_duplicates_keeps_the_own_site_row():
     rows = [
-        row("Strand Ag Supply (Facebook)", "https://facebook.com/strandag", "https://facebook.com/strandag", "(555) 010-0000", "Ames"),
-        row("Strand Ag Supply", "https://strandagsupply.com", "https://strandagsupply.com", "+1 555-010-0000"),
-        row("Social Only", "https://facebook.com/x", "https://x.com"),
+        row("Strand Ag Supply", "https://facebook.com/strandag", "https://facebook.com/strandag", "(555) 010-0000", "Ames"),
+        row("Strand Ag Supply Inc", "https://strandagsupply.com", "https://strandagsupply.com", "+1 555-010-0000"),
+        row("X Co", "https://news.com/x-co-opens", "https://www.x.com"),
         row("X Co", "https://www.x.com", "https://www.x.com"),
-        row("Alone", "https://alone.com", "https://alone.com", "(555) 999-0000"),
+        row("Redneck Blinds", "https://redneckblinds.com", "https://redneckblinds.com", "(555) 999-0000"),
+        row("Black Dog Blinds", "https://blackdogblinds.com", "https://blackdogblinds.com", "(555) 999-0000"),
     ]
     kept, merged = merge_duplicates(rows)
-    assert [r["Company"] for r in kept] == ["Strand Ag Supply", "X Co", "Alone"]
-    assert kept[0]["City"] == "Ames"
-    assert [(a["Company"], b["Company"]) for a, b in merged] == [
-        ("Strand Ag Supply", "Strand Ag Supply (Facebook)"), ("X Co", "Social Only")]
+    assert [r["Company"] for r in kept] == ["Strand Ag Supply Inc", "X Co", "Redneck Blinds", "Black Dog Blinds"]
+    assert kept[0]["City"] == "Ames" and kept[1]["_url"] == "https://www.x.com"
+    assert [(a["_url"], b["_url"]) for a, b in merged] == [
+        ("https://strandagsupply.com", "https://facebook.com/strandag"), ("https://www.x.com", "https://news.com/x-co-opens")]
     assert phone_digits("+1 (555) 010-0000") == phone_digits("555.010.0000") == "5550100000"
