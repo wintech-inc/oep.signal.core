@@ -1,32 +1,35 @@
 # CRM export: Poultry Houses (`pac_poultry_houses`)
 
-**245 companies** in `exports/crm_pac_poultry_houses.csv`, 223 of them in lead roles (Manufacturer, Component Reseller, Supply Reseller).
+**223 companies** in `exports/crm_pac_poultry_houses.csv`, 192 of them in lead roles (Manufacturer, Component Reseller, Supply Reseller).
 
 | Role | Companies |
 |---|---|
-| Manufacturer | 127 |
-| Component Manufacturer | 16 |
+| Manufacturer | 110 |
+| Component Manufacturer | 15 |
 | Component Reseller | 6 |
-| Supply Reseller | 90 |
-| Reseller | 0 |
-| Adjacent | 6 |
+| Reseller | 1 |
+| Supply Reseller | 76 |
+| Adjacent | 15 |
 
 ## Contact fields filled
 
 | Street address | City | State | ZIP | Phone |
 |---|---|---|---|---|
-| 154 (63%) | 162 (66%) | 162 (66%) | 154 (63%) | 203 (83%) |
+| 186 (83%) | 188 (84%) | 188 (84%) | 186 (83%) | 211 (95%) |
 
-Blank means no map listing matched the company; nothing is guessed. Spot-check sheet: `eval/review_contacts_pac_poultry_houses.csv`.
+Filled from the company's own website or a web search where the map listing had none: 31 phone numbers, 43 addresses. Blank means neither showed it; nothing is guessed. Spot-check sheet: `eval/review_contacts_pac_poultry_houses.csv`.
 
 ## Not exported
 
-- Found by the map lookup to be based outside the market's geography: 0.
-- Pocahontas Aluminum (PAC) itself (pages discovery found under its name): 1.
+- Placed outside the market's geography by stage 2, the map listing, or the company's own pages: 14.
+- Pocahontas Aluminum (PAC) itself (pages discovery found under its name): 2.
+- Pages stage 2 could not tie to a named company (a post or article title): 5.
 - In the market but without a role from the current stage-2 prompt (budget stop or errors; run again): 0.
 
 ## Duplicates merged
 
+- Farmer Boy (https://farmerboyag.com/) kept; Farmer Boy (https://facebook.com/farmerboyag) dropped
+- Hostetler (H3 Poultry) (https://h3poultry.com) kept; H3 Poultry (https://facebook.com/HostetlerBuildings) dropped
 - Ozark Ag (https://ozark-ag.com/) kept; Ozark Ag (https://facebook.com/ozarkag) dropped
 - Parrish Equipment (https://www.parrishequipment.com/) kept; Parrish Equipment Supply (https://facebook.com/372047090445) dropped
 - Parrish Equipment (https://www.parrishequipment.com/) kept; Parrish Equipment Supply (https://facebook.com/parrishequipmentsupply) dropped
@@ -34,31 +37,31 @@ Blank means no map listing matched the company; nothing is guessed. Spot-check s
 - Premiere Poultry Supply (https://www.premierepoultrysupply.net/) kept; Premiere Poultry Supply (https://southarkdaily.com/article/news/local/premiere-poultry-supply-your-farm-our-priority/amp/) dropped
 - Reliable Poultry Supply (https://www.reliablepoultry.com) kept; Reliable Poultry Supply (https://instagram.com/reliablepoultry) dropped
 - Reliable Poultry Supply (https://www.reliablepoultry.com) kept; Reliable Poultry Supply (https://facebook.com/reliablepoultrysupply) dropped
+- Superior Poultry Supply (https://spspoultry.com/) kept; Superior Poultry (https://facebook.com/cavecitychamber) dropped
 - Hog Slat (https://www.hogslat.com) kept; Hog Slat (https://facebook.com/HogSlatInc) dropped
 - Hog Slat (https://www.hogslat.com) kept; Hog Slat (https://www.nationalhogfarmer.com/farming-business-management/hog-slat-opens-new-store-in-north-carolina) dropped
 - Northeast Agri Systems (https://neagri.com/) kept; Northeast Agri Systems (https://facebook.com/NortheastAgriSystems) dropped
 - Georgia Poultry Equipment Co. (https://gapoultry.com/) kept; Georgia Poultry Equipment Co. (https://facebook.com/HogSlatBaySprings) dropped
 - Georgia Poultry Equipment Co. (https://gapoultry.com/) kept; Georgia Poultry Equipment Co. (https://facebook.com/HogSlatRoyston) dropped
-- Lionheart Construction LLC (https://lionheartconstructionllc.com/) kept; Lionheart Construction LLC (https://franklinlocality.com/business/lionheart-construction-llc/) dropped
+- Lionheart Construction, LLC (https://lionheartconstructionllc.com/) kept; Lionheart Construction LLC (https://franklinlocality.com/business/lionheart-construction-llc/) dropped
+- Smith Poultry Supply (https://www.smithpoultryalabama.com/) kept; SPS Smith Poultry Supply (https://facebook.com/spsalabama) dropped
+- CTB, Inc. (https://ctbworld.com) kept; CTB, Inc. (https://ctbinc.com) dropped
 - Michiana Equipment LLC (https://michianaequipment.com/) kept; Michiana Equipment LLC (https://www.buildpro.org/resources/michiana-equipment-llc/) dropped
-- Facco USA Inc. (https://www.facco.net/en/world/nordamerica/usa) kept; Facco USA Inc. (https://www.townvue.com/Business/Details/facco-usa-inc-01au3x17) dropped
 - H3co (https://h3co.com/) kept; H3co (https://hostetlergroup.com/projects/) dropped
-- Farm Systems Inc (https://www.farmsystemsinc.com/about-us) kept; Farm Systems (https://piedmontfarmsystems.com/collections/poultry-equipment) dropped
-- CTB, Inc. (https://ctbinc.com) kept; CTB, Inc. (https://ctbworld.com) dropped
-- Southern Ag Builders (https://southernagbuilders.com) kept; Southern Ag Builders & Supply (https://facebook.com/61576462497259) dropped
-- Midwest Livestock (https://www.midwestlivestock.com/) kept; Midwest Livestock Systems (https://facebook.com/MidwestLivestockSystems) dropped
+- Southern Ag Builders and Supply (https://southernagbuilders.com) kept; Southern Ag Builders & Supply (https://facebook.com/61576462497259) dropped
+- Settje Agri-Services and Engineering (https://settje.com/) kept; Settje Agri-Services and Engineering, Inc. (https://facebook.com/SettjeAgriServices) dropped
+- A1Ag Services (https://a1ag.com/) kept; A1 Ag Services (https://facebook.com/a1agservices) dropped
 - The Mobile Chicken House (https://mobilechickenhouse.com/) kept; The Mobile Chicken House (https://instagram.com/themobilechickenhouse) dropped
-- New Standard Ag (https://newstandardag.com/) kept; New Standard Ag (http://newstandard-group.com/) dropped
-- Poultry Specialties Inc (https://poultryspecialties.com/) kept; Poultry Specialties, Inc. (https://facebook.com/Poultryspecialties) dropped
+- Poultry Specialties, Inc. (https://poultryspecialties.com/) kept; Poultry Specialties, Inc. (https://facebook.com/Poultryspecialties) dropped
 - Marydel Ag Supply (https://marydelag.com/) kept; Marydel Ag Supply (https://facebook.com/marydelagsupply) dropped
-- QC Supply (https://www.qcsupply.com) kept; QC Supply (https://facebook.com/qcsupplycollins) dropped
 - QC Supply (https://www.qcsupply.com) kept; QC Supply (https://facebook.com/QCSUPPLY) dropped
-- QC Supply (https://www.qcsupply.com) kept; QC Supply (https://facebook.com/qcsupplyschuylerne) dropped
 - QC Supply (https://www.qcsupply.com) kept; QC Supply (https://instagram.com/theqcsupply) dropped
-- Potters Poultry (https://www.potterspoultryusa.com/) kept; Potters Poultry USA (https://facebook.com/PottersPoultryUSA) dropped
+- QC Supply (https://www.qcsupply.com) kept; QC Supply (https://facebook.com/qcsupplycollins) dropped
+- QC Supply (https://www.qcsupply.com) kept; QC Supply (https://facebook.com/qcsupplyschuylerne) dropped
+- Potters Poultry International (https://www.potterspoultryusa.com/) kept; Potters Poultry USA (https://facebook.com/PottersPoultryUSA) dropped
 - Strand Ag Supply (http://www.strandagsupply.com/) kept; Strand Ag Supply (https://facebook.com/strandagsupply) dropped
 - Bunting & Bertrand Inc (https://www.buntingandbertrand.com/) kept; Bunting & Bertrand Inc. (https://www.morningagclips.com/bunting-bertrand-inc-delawares-premiere-poultry-equipment-provider-for-50-years/) dropped
+- Facco USA Inc. (https://www.facco.net/en/world/nordamerica/usa) kept; Facco USA Inc. (https://www.townvue.com/Business/Details/facco-usa-inc-01au3x17) dropped
 - Poultry Equipment Plus (https://poultryequipmentplus.com/) kept; Poultry Equipment Plus (https://facebook.com/pepmillspoultry) dropped
-- A1 Ag Services (https://a1ag.com/) kept; A1 Ag Services (https://facebook.com/a1agservices) dropped
 
 This export's API and search spend: $0.00.
