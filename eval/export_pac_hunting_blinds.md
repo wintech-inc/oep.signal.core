@@ -21,7 +21,7 @@ Filled from the company's own website or a web search where the map listing had 
 
 ## Not exported
 
-- Placed outside the market's geography by stage 2, the map listing, or the company's own pages: 1.
+- Placed outside the market's geography by stage 2, the map listing, or the company's own pages: 0.
 - Pocahontas Aluminum (PAC) itself (pages discovery found under its name): 0.
 - Pages stage 2 could not tie to a named company (a post or article title): 29.
 - In the market but without a role from the current stage-2 prompt (budget stop or errors; run again): 0.

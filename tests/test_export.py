@@ -1,6 +1,6 @@
 from signal_core.companies import Company
 from signal_core.export import (
-    abroad, contact, crm_matches, crm_status, homepage, is_supplier, merge_duplicates, names_site, phone_digits, split_address,
+    abroad, contact, crm_matches, us_phone, crm_status, homepage, is_supplier, merge_duplicates, names_site, phone_digits, split_address,
 )
 
 
@@ -125,3 +125,9 @@ def test_crm_matches_by_page_then_exact_name():
     assert crm_matches({"company_id": "facebook.com/farmerboyag", "name": "Farmer Boy", "url": "https://facebook.com/farmerboyag"},
                        known, by_name) == [a]
     assert crm_matches({"company_id": "other.com", "name": "Farmer Boy Sheds", "url": "https://other.com"}, known, by_name) == []
+
+
+def test_us_phone():
+    assert us_phone("+1 (270) 748-2541") == us_phone("270.748.2541") == us_phone("1-270-748-2541") == "(270) 748-2541"
+    assert us_phone("(254)725-4554 ext. 12") == "(254) 725-4554"
+    assert us_phone("+44 1568 708819") == us_phone("1300-655-735 (AUS)") == us_phone("018 462 0784") == us_phone("") == ""

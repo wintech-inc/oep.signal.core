@@ -15,13 +15,13 @@
 
 | Street address | City | State | ZIP | Phone |
 |---|---|---|---|---|
-| 186 (83%) | 188 (84%) | 188 (84%) | 186 (83%) | 211 (95%) |
+| 186 (83%) | 188 (84%) | 188 (84%) | 186 (83%) | 209 (94%) |
 
 Filled from the company's own website or a web search where the map listing had none: 31 phone numbers, 43 addresses. Blank means neither showed it; nothing is guessed. Spot-check sheet: `eval/review_contacts_pac_poultry_houses.csv`.
 
 ## Not exported
 
-- Placed outside the market's geography by stage 2, the map listing, or the company's own pages: 14.
+- Placed outside the market's geography by stage 2, the map listing, or the company's own pages: 0.
 - Pocahontas Aluminum (PAC) itself (pages discovery found under its name): 2.
 - Pages stage 2 could not tie to a named company (a post or article title): 5.
 - In the market but without a role from the current stage-2 prompt (budget stop or errors; run again): 0.

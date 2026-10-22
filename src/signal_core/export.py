@@ -163,6 +163,18 @@ def town_of(c: dict) -> str | None:
     return parse_town(c.get("based_in")) or parse_town(c.get("location"))
 
 
+def us_phone(phone: str | None) -> str:
+    """A US or North American number in one format, '(270) 748-2541'; "" for anything else (another country's
+    code, or digits that can't be a North American number, such as '1300-655-735 (AUS)')."""
+    if not phone or is_foreign_phone(phone):
+        return ""
+    digits = re.sub(r"\D", "", phone.split("x")[0].split("ext")[0])
+    digits = digits[1:] if len(digits) == 11 and digits[0] == "1" else digits
+    if not re.fullmatch(r"[2-9]\d{2}[2-9]\d{6}", digits):
+        return ""
+    return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+
+
 def is_foreign_phone(phone: str | None) -> bool:
     """A number written with a country code other than +1."""
     return bool(phone) and phone.startswith("+") and not phone.startswith("+1")
@@ -282,8 +294,7 @@ def crm_matches(c: dict, known: dict[str, Company], by_name: dict[str, list[Comp
 
 def crm_row(market: Market, c: dict, crm: list[Company] = ()) -> dict:
     ct = merged_contact(c)
-    if is_foreign_phone(ct["phone"]):
-        ct["phone"] = ""
+    ct["phone"] = us_phone(ct["phone"])
     url = role_url(c)
     return {
         "Company": display_name(c),
