@@ -156,6 +156,12 @@ M1's and M2's rules apply unchanged. In addition:
 
 ## 7. Evaluation
 
+**Changed by Tim on 2026-10-22, after the first real export:** Tim does not relabel the role reference set or check the contact spot sample. The judges are the sales and marketing team, who call these companies and can say whether a role or a phone number is right. Feedback from sales replaces the targets below for M4. The tooling stays (`signal review|freeze|eval --roles`, `signal eval --contacts`, and the sheets in `eval/review_roles_*` and `eval/review_contacts_*`) for when feedback arrives. Until then `data/reference_roles.json` still holds M2's customer/competitor labels, so `signal eval --roles` doesn't mean anything yet.
+
+The first export (both markets, $2.07): poultry 252 companies, 229 in lead roles, phone filled for 81% and street address for 61%; hunting blinds 947, 805 in lead roles, phone 73% and street address 34%. See `eval/export_<market>.md`.
+
+The plan as agreed before that change:
+
 **Role reference set.** The M2 reference set (100 companies, Tim-labeled) is relabeled with the new roles, plus up to 10 companies per market for each role the set lacks (likely Reseller, Supply Reseller, and Component Reseller), sampled from the discovery list where the new stage 2 gives that role, to test precision. `signal review --roles` writes the sheet with the model's role and comment; Tim confirms or corrects on the review page as in M2. About 120 to 140 rows per market, mostly quick confirmations. `signal freeze --roles` replaces `data/reference_roles.json`.
 
 **Measures** (`signal eval --roles`):
