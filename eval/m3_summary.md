@@ -26,7 +26,7 @@ Both lists are many times the seed list, and neither market is saturated yet (se
 | Multiple of the seed list | 7.8x | 8.9x | reported |
 | Last round adds under 2% new in-market companies | 38% | 33% | **not met** (stopped on budget) |
 | Probe finds at least 95% already on the list | 112 of 116 (97%) | 28 of 37 (76%) | blinds met, poultry **missed** (see below) |
-| Spot check: at least 90% of sampled `in` verdicts right | pending | pending | review page with Tim |
+| Spot check: at least 90% of sampled `in` verdicts right | 25 of 25 (100%) | 10 of 25 (40%) | blinds met, poultry **missed**: 13 of the 15 wrong are outside the US |
 | Cost under $30 for a first full run plus about $3 for the probe | $46.64 | $33.81 | **not met** |
 | Re-run with nothing changed under $3 | not measured | not measured | verdict and search caches make it near zero |
 | Full run under two hours | 87 min | 79 min | met |
@@ -69,4 +69,9 @@ Every source contributed in-market companies no other source found (the "Only th
 
 ## Spot check
 
-Pending: Tim is labeling 25 `in` and 25 `out`/`unknown` discovered companies per market. Results will be in `eval/results_discovery_<market>.md`.
+Tim labeled 25 `in` and 25 `out`/`unknown` discovered companies per market ([blinds](results_discovery_pac_hunting_blinds.md), [poultry](results_discovery_pac_poultry_houses.md)). No in-market company turned up in either `out` sample.
+
+- **Blinds:** all 25 `in` verdicts right.
+- **Poultry:** 10 of 25 right. 13 of the 15 wrong ones are outside the contiguous US (Germany, France, India, Greece, Türkiye, Colombia, the UK, Canada). Of the other two, one is a heater maker M1 let in under rule B, and the other is Big Dutchman's Facebook page, judged from a post about another company.
+
+**Geography is not enforced anywhere.** The brief says contiguous US only, but M1 judges the market rule alone, so a German poultry equipment maker is `in`. Discovery then expands from it: in-market companies' towns become `nearby` searches (poultry searched around 17 Canadian towns) and their sites get snowballed. Most foreign poultry companies first came from international list pages (UK and Indian trade-show exhibitor lists, the Canadian Poultry buyers' guide, a by-country company directory). Blinds is a domestic market and barely drifts (2 of 1,144). The `outside_us` marker catches only a country domain or a non-US province, so it undercounts: it flagged 119 poultry companies but only 6 of the 14 foreign ones in the sample. The real share of discovered poultry companies outside the US may be close to half.
