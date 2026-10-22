@@ -2,37 +2,37 @@
 
 ## Headline
 
-**560 in-market companies**: 402 customer, 46 both, 24 competitor, 87 neither, 1 role errors.
+**279 in-market companies**: 221 customer, 23 both, 9 competitor, 26 neither.
 
-That is **8.9x** the 63 in-market companies on the seed list. 497 of them are not on the seed list at all.
+That is **4.7x** the 59 in-market companies on the seed list. 220 of them are not on the seed list at all.
 
 ## By source
 
 | Source | Candidates | In market | Customer | Both | Competitor | Neither | Only this source |
 |---|---|---|---|---|---|---|---|
-| seed | 919 | 68 | 49 | 11 | 4 | 3 | 3 |
-| model | 21 | 4 | 2 | 1 | 0 | 1 | 0 |
-| web | 5151 | 271 | 194 | 29 | 20 | 28 | 73 |
-| maps | 5779 | 128 | 87 | 16 | 5 | 20 | 4 |
-| lists | 2723 | 241 | 165 | 32 | 7 | 37 | 95 |
-| nearby | 3834 | 257 | 204 | 22 | 3 | 28 | 55 |
-| snowball | 1168 | 140 | 87 | 20 | 12 | 21 | 43 |
-| probe | 381 | 37 | 29 | 5 | 1 | 2 | 7 |
+| seed | 919 | 64 | 49 | 13 | 2 | 0 | 2 |
+| model | 21 | 3 | 2 | 1 | 0 | 0 | 0 |
+| web | 5151 | 189 | 148 | 21 | 8 | 12 | 42 |
+| maps | 5779 | 104 | 78 | 18 | 3 | 5 | 2 |
+| lists | 2723 | 97 | 68 | 18 | 3 | 8 | 18 |
+| nearby | 3834 | 177 | 148 | 17 | 1 | 11 | 26 |
+| snowball | 1168 | 45 | 24 | 11 | 6 | 4 | 8 |
+| probe | 381 | 25 | 19 | 5 | 0 | 1 | 3 |
 
 ## Rounds (saturation curve)
 
 | Round | Queries run | Snowballed | Leads | New candidates | New in market | % of list | Cost | Minutes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 2736 | 0 | 28607 | 10344 | 364 | 100% | $7.42 | 27 |
-| 2 | 445 | 63 | 1200 | 94 | 5 | 1% | $0.09 | 5 |
-| 3 | 3036 | 306 | 30651 | 5948 | 184 | 33% | $8.08 | 15 |
+| 1 | 2736 | 0 | 28607 | 10344 | 197 | 100% | $7.42 | 27 |
+| 2 | 445 | 63 | 1200 | 94 | 2 | 1% | $0.09 | 5 |
+| 3 | 3036 | 306 | 30651 | 5948 | 77 | 28% | $8.08 | 15 |
 
-Last round added 33% new in-market companies (stop rule: under 2%).
+Last round added 28% new in-market companies (stop rule: under 2%).
 
 ## Paging depth
 
 4366 queries ran. Deepest page reached per query: page 1: 2960, page 2: 1406.
- 27 queries still have a productive next page.
+ 127 queries still have a productive next page.
 
 - `web: poultry house construction company`: 2 pages
 - `web: poultry house construction company in Alabama`: 2 pages
@@ -49,15 +49,15 @@ Towns searched with nearby queries: 163.
 
 ## Source overlap and market size
 
-- In-market companies found by two or more sources (not counting the seed list): 271 of 560 (48%).
-- Maps (map search, including nearby map searches) found 177; everything else found 533; both found 150.
-- Capture-recapture estimate of the reachable market: about 629 in-market companies (we have 560).
+- In-market companies found by two or more sources (not counting the seed list): 170 of 279 (61%).
+- Maps (map search, including nearby map searches) found 128; everything else found 266; both found 115.
+- Capture-recapture estimate of the reachable market: about 296 in-market companies (we have 279).
 
 ## By state
 
-Location known for 272 of 560 in-market companies. Outside the search locations (shown, not filtered): 42. Likely outside the US by location or country domain (marked in the leads sheet, not filtered): 119.
+Location known for 193 of 279 in-market companies. Candidates out without classifying because they are based outside the market's geography: 119.
 
-PA 24, AR 21, GA 19, ON 16, IA 13, AL 12, IN 12, MB 12, MO 11, MN 10, NE 10, TX 10, NC 9, CA 8, BC 7, DE 7, MI 7, OH 7, SD 6, FL 5, VA 5, WI 5, MS 4, KY 3, NJ 3, OK 3, AB 2, CO 2, KS 2, MD 2, SC 2, SK 2, AZ 1, CT 1, IL 1, LA 1, ME 1, ND 1, NS 1, NY 1, OR 1, QC 1, QT 1
+PA 22, AR 19, GA 15, AL 12, IN 11, IA 10, MO 10, NE 10, MN 9, NC 8, CA 6, DE 6, OH 6, SD 6, TX 6, VA 5, MI 4, WI 4, MS 3, KS 2, KY 2, MD 2, NJ 2, OK 2, SC 2, AZ 1, CO 1, CT 1, FL 1, IL 1, LA 1, ND 1, NY 1, OR 1
 
 ## Leads dropped: no website found
 
@@ -65,7 +65,7 @@ PA 24, AR 21, GA 19, ON 16, IA 13, AL 12, IN 12, MB 12, MO 11, MN 10, NE 10, TX 
 
 ## Left to do
 
-Queries with a next page due: 27. In-market companies not yet snowballed: 191. Candidates not yet classified (or errors): 0.
+Queries with a next page due: 127. In-market companies not yet snowballed: 80. Candidates not yet classified (or errors): 0.
 
 ## Runs
 
@@ -74,5 +74,6 @@ Queries with a next page due: 27. In-market companies not yet snowballed: 191. C
 | discover | lists, maps, model, nearby, seed, snowball, web | 6105 | 3648 | 19868 | $7.52 | 32.1 | no |
 | discover | lists, maps, model, nearby, seed, snowball, web | 16568 | 3591 | 10048 | $22.43 | 36.0 | budget |
 | probe | lists, maps, model, nearby, seed, snowball, web | 2767 | 31 | 2438 | $3.86 | 10.6 | no |
+| discover | lists, maps, model, nearby, seed, snowball, web | 0 | 0 | 441 | $0.41 | 1.7 | no |
 
-Total candidates: 16584. Verdicts: out 14098, unknown 1926, in 560.
+Total candidates: 16584. Verdicts: out 14363, unknown 1942, in 279.
