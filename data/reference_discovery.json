@@ -410,8 +410,8 @@
   {
     "company_id": "hizco.com.tr",
     "market_id": "pac_poultry_houses",
-    "label": "in",
-    "note": ""
+    "label": "out",
+    "note": "They are in Türkiye. Out."
   },
   {
     "company_id": "spaceray.co.uk",

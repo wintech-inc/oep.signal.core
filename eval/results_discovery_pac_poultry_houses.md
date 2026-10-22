@@ -4,7 +4,7 @@ Tim reviewed 50 discovered companies (not on the seed list): 25 M1 called in, 25
 
 | Measure | Result | Target | |
 |---|---|---|---|
-| `in` verdicts right | 10 of 25 (40%) | ≥ 90% | **missed** |
+| `in` verdicts right | 9 of 25 (36%) | ≥ 90% | **missed** |
 | In-market companies in the out sample | 0 of 25 | reported | |
 
 ## Wrong `in` verdicts
@@ -20,6 +20,7 @@ Tim reviewed 50 discovered companies (not on the seed list): 25 M1 called in, 25
 - **Elevagelec** (https://elevagelec.com): Elevagelec is a Breton company that sells, installs and maintains equipment for poultry and pig buildings, including a poultry equipment line (feeding, drinking, ventilation, heating) and an on-site store, which fits a poultry equipment dealer under rule B. Reviewer note: They are in France. Out.
 - **METPLAST INDUSTRIES** (https://metplast.com/): Metplast designs, manufactures, and installs complete poultry housing, including structural builds for layer, breeder, and broiler farms from levelled land to a running farm, which is building commercial poultry houses (rule A). Reviewer note: They are in India. Out.
 - **Anitec** (http://www.anitec.gr): Anitec is a Greek company that sells poultry house equipment (feeders, drinkers, heating, cooling, ventilation, control panels) and states it designs and builds poultry farms and hatcheries, so it builds poultry houses (rule A) and also distributes house equipment (rule B). Reviewer note: They are in Greece. Out.
+- **HizCo Poultry Equipment** (https://hizco.com.tr/): HizCo manufactures poultry house equipment (feeders, drinkers, cages, climate and automation systems) and also does turnkey poultry house design, installation and set-up, which is building the end product under rule A; no doors or windows are shown but rule A alone suffices. Reviewer note: They are in Türkiye. Out.
 - **Space-Ray** (https://spaceray.co.uk): Space-Ray manufactures and distributes gas and electric radiant tube and warm air heaters for poultry houses and other buildings; it sells heating equipment for poultry houses to growers and installers, which is rule B, but it does not make doors or windows or build houses. Reviewer note: Out due to lack of windows/doors, and they appear to be in the United Kingdom.
 - **Distribuciones Tecnica SAS** (https://distribucionestecnicas.com/): Distribuciones Tecnica is a Colombian LED lighting company that represents brands and sells its own DTS lighting, including a dedicated avian lighting line for poultry houses, which makes it a distributor of poultry house equipment sold to farms and builders under rule B, though poultry is one segment among industrial and commercial lighting. Reviewer note: They are in Colombia. Out.
 - **Poulmech** (https://poulmech.com): Poulmech is a Turkish maker of layer cage systems, feeding, watering, egg collection, and ventilation equipment for poultry houses, and it describes building integrated systems, which suggests it supplies and equips houses under rule B, though it is primarily an equipment manufacturer and the evidence is not conclusive. Reviewer note: They are in Türkiye. Out.

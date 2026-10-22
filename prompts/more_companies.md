@@ -21,4 +21,4 @@ Not included:
 
 # How to answer
 
-List as many companies as you can, up to 100, that you believe are in this market and are not on the list, including small and regional ones. For each: its name, its website (or Facebook page) if you know it, and its town as "Town, ST" if you know it, otherwise null. Only name companies you believe exist; every name is checked afterwards, so a company that doesn't exist only wastes a lookup. If you can't think of any more, return an empty list.
+List as many companies as you can, up to 100, that you believe are in this market and are not on the list, including small and regional ones. For each: its name, its website (or Facebook page) if you know it, its town as "Town, ST" if you know it, otherwise null, and its country as a two-letter ISO code (US, CA, ...) if you know it, otherwise null. Only name companies you believe exist; every name is checked afterwards, so a company that doesn't exist only wastes a lookup. If you can't think of any more, return an empty list.

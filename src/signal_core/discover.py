@@ -115,6 +115,7 @@ class FoundCompany(BaseModel):
     name: str
     url: str | None
     location: str | None
+    country: str | None
 
 
 class CompanyList(BaseModel):
@@ -141,6 +142,7 @@ class Lead:
     source: str
     detail: str
     query: str | None = None  # the query whose page found it, for the paging rule
+    country: str | None = None
 
 
 def lead_url(raw: str | None) -> str | None:
@@ -188,11 +190,20 @@ def social_name(name: str, url: str) -> str:
 GENERIC_CC_DOMAINS = {"us", "co", "io", "ai", "me", "tv", "ly", "cc", "fm"}
 
 
-def outside_us(candidate: dict) -> bool:
-    """Shown in the leads sheet and report, never filtered: a non-US state or province code, or a country domain."""
+def outside_geography(candidate: dict, home: set[str], countries: set[str]) -> str | None:
+    """Why a candidate is known to be based outside the brief's hard geography (a state or province code
+    outside `home`, a country outside `countries`, or another country's domain), or None. Such candidates are
+    out without classifying."""
+    country = candidate.get("country")
+    if countries and country and country.upper() not in countries:
+        return f"country {country}"
     state = state_of(candidate.get("location"))
+    if state and home and state not in home:
+        return f"located in {candidate['location']}"
     ending = bare_host(candidate["url"]).rsplit(".", 1)[-1]
-    return bool(state and state not in US_STATES) or (len(ending) == 2 and ending not in GENERIC_CC_DOMAINS)
+    if countries and len(ending) == 2 and ending not in GENERIC_CC_DOMAINS and ending.upper() not in countries:
+        return f"country domain .{ending}"
+    return None
 
 
 def parse_town(text: str | None) -> str | None:
@@ -295,6 +306,9 @@ class Discovery:
                  max_cost: float = MAX_COST, reclassify: bool = False, recheck: bool = False, concurrency: int = 16):
         self.market, self.blind, self.max_cost, self.reclassify = market, blind, max_cost, reclassify
         self.recheck = recheck
+        geography = market.geography
+        self.home = {STATE_CODES[loc.lower()] for loc in geography.search_locations if loc.lower() in STATE_CODES} if geography else set()
+        self.countries = set(geography.countries) if geography else set()
         self.sources = sources - {"seed"} if blind else sources
         self.queries = load_queries(market.id)
         self.state = load_state(market.id, blind) or fresh_state(market.id, blind)
@@ -425,7 +439,7 @@ class Discovery:
                 own = lead_url(c.url)
                 if own and company_key(own) == site:   # a profile page on the list's own site, not the company's
                     own = None
-                leads.append(Lead(c.name, own, c.location, source, f"list: {page['final_url']}", qid))
+                leads.append(Lead(c.name, own, c.location, source, f"list: {page['final_url']}", qid, c.country))
             more += [u for u in answer.more_pages if u.startswith("http") and company_key(u) == site]
         if depth == 0:
             for found in await asyncio.gather(*(self.read_list(u, source, qid, 1) for u in list(dict.fromkeys(more))[:MORE_PAGES])):
@@ -467,7 +481,7 @@ class Discovery:
         user = "Companies already on the list:\n\n" + "\n".join(f"- {k}" for k in dict.fromkeys(known))
         answer = await self.ask(SONNET, more_prompt(self.market.id), user, CompanyList, max_tokens=16000)
         detail = f"round {self.state['round']}"
-        return [Lead(c.name, lead_url(c.url), c.location, "model", detail) for c in (answer.companies if answer else [])]
+        return [Lead(c.name, lead_url(c.url), c.location, "model", detail, country=c.country) for c in (answer.companies if answer else [])]
 
     # Leads -> candidates
 
@@ -532,6 +546,8 @@ class Discovery:
             add_found_by(candidate, lead.source, lead.detail)
             if lead.location and not candidate["location"]:
                 candidate["location"] = parse_town(lead.location) or lead.location
+            if lead.country and not candidate.get("country"):
+                candidate["country"] = lead.country.upper()
             if lead.query and key not in self.state["queries"][lead.query]["keys"]:
                 self.state["queries"][lead.query]["keys"].append(key)
         return new
@@ -539,7 +555,7 @@ class Discovery:
     # Classify and locate
 
     async def classify_pending(self) -> None:
-        pending = [c for c in self.candidates.values() if c.get("verdict") in (None, "error")]
+        pending = [c for c in self.candidates.values() if c.get("verdict") in (None, "error") and not self.gate(c)]
         done = 0
 
         async def one(c):
@@ -551,6 +567,14 @@ class Discovery:
             self.progress(f"classifying {done}/{len(pending)}")
 
         await asyncio.gather(*(one(c) for c in pending))
+
+    def gate(self, c: dict) -> bool:
+        """The brief's hard geography: a company known to be based outside it is out, and is never classified."""
+        why = outside_geography(c, self.home, self.countries)
+        if why:
+            c.update({k: None for k in VERDICT_FIELDS})
+            c.update(verdict="out", reason=f"Not classified: based outside the market's geography ({why}).")
+        return bool(why)
 
     async def two_stage(self, c: dict) -> dict:
         """Both stages, unchanged. Results are cached by prompt version, so the blind run and re-runs reuse them."""
@@ -571,7 +595,8 @@ class Discovery:
         return r
 
     async def locate(self) -> None:
-        """One map lookup by name for each in-market company without a known town."""
+        """One map lookup by name for each in-market company without a known town. One found outside
+        the market's geography is out."""
         todo = [c for c in self.candidates.values()
                 if c.get("verdict") == "in" and not c.get("location") and not c.get("located")]
 
@@ -592,6 +617,8 @@ class Discovery:
                     return
 
         await asyncio.gather(*(one(c) for c in todo))
+        for c in self.in_market():
+            self.gate(c)
 
     # Rounds
 
@@ -780,7 +807,7 @@ async def write_queries(market: Market) -> QueryFile:
 # Outputs: leads sheet and report
 
 LEAD_COLUMNS = ["company_id", "name", "url", "location", "role", "rule", "reason", "evidence_url", "role_reason",
-                "customer_evidence_url", "competitor_evidence_url", "outside_us", "sources", "found_by", "round", "seed"]
+                "customer_evidence_url", "competitor_evidence_url", "sources", "found_by", "round", "seed"]
 
 
 def write_leads(market_id: str, state: dict) -> Path:
@@ -792,7 +819,7 @@ def write_leads(market_id: str, state: dict) -> Path:
         writer.writeheader()
         for c in rows:
             name = social_name(c["name"], c["url"]) if is_social(c["url"]) else c["name"]
-            writer.writerow({**c, "name": name, "outside_us": "yes" if outside_us(c) else "",
+            writer.writerow({**c, "name": name,
                              "sources": ", ".join(sorted(sources_of(c))),
                              "found_by": "; ".join(f["detail"] for f in c["found_by"][:3])})
     return path
@@ -928,12 +955,10 @@ def report(market: Market, state: dict) -> str:
     ]
 
     states = Counter(state_of(c.get("location")) for c in ins)
-    home = {STATE_CODES.get(loc.lower()) for loc in (market.geography.search_locations if market.geography else [])}
-    outside = sum(n for s, n in states.items() if s and home and s not in home)
+    gated = sum(1 for c in state["candidates"].values() if (c.get("reason") or "").startswith("Not classified: based outside"))
     lines += ["## By state", "",
               f"Location known for {len(ins) - states[None]} of {len(ins)} in-market companies. "
-              f"Outside the search locations (shown, not filtered): {outside}. Likely outside the US by location or "
-              f"country domain (marked in the leads sheet, not filtered): {sum(outside_us(c) for c in ins)}.", "",
+              f"Candidates out without classifying because they are based outside the market's geography: {gated}.", "",
               ", ".join(f"{s} {n}" for s, n in sorted(states.items(), key=lambda x: (-x[1], x[0] or "")) if s), ""]
 
     unresolved = state["unresolved"]

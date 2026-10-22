@@ -1,7 +1,7 @@
 from signal_core import markets
 from signal_core.companies import company_key
 from signal_core.discover import (
-    MAX_PAGE, QueryFile, add_found_by, first_queries, lead_url, nearby_queries, new_query, outside_us, parse_town, settle,
+    MAX_PAGE, QueryFile, add_found_by, first_queries, lead_url, nearby_queries, new_query, outside_geography, parse_town, settle,
     should_stop, title_name,
 )
 
@@ -37,10 +37,16 @@ def test_title_name():
                       "https://facebook.com/NortheastAgriSystems") == "Northeast Agri Systems"
 
 
-def test_outside_us():
-    assert outside_us({"url": "https://pwmaines.co.uk/", "location": None})
-    assert outside_us({"url": "https://acme.com/", "location": "Mitchell, ON"})
-    assert not outside_us({"url": "https://acme.co/", "location": "Cullman, AL"})
+def test_outside_geography():
+    home, us = {"AL", "TX"}, {"US"}
+    assert outside_geography({"url": "https://pwmaines.co.uk/", "location": None}, home, us) == "country domain .uk"
+    assert outside_geography({"url": "https://acme.com/", "location": "Mitchell, ON"}, home, us)
+    assert outside_geography({"url": "https://acme.com/", "location": "Anchorage, AK"}, home, us)
+    assert not outside_geography({"url": "https://acme.co/", "location": "Cullman, AL"}, home, us)
+    assert not outside_geography({"url": "https://acme.com/", "location": None}, home, us)
+    assert outside_geography({"url": "https://acme.com/", "location": None, "country": "IN"}, home, us) == "country IN"
+    assert not outside_geography({"url": "https://acme.com/", "location": None, "country": "US"}, home, us)
+    assert not outside_geography({"url": "https://acme.de/", "location": "Mitchell, ON"}, set(), set())
 
 
 def test_first_queries():
