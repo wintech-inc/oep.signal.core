@@ -72,7 +72,7 @@ uv run signal export --market pac_poultry_houses pac_hunting_blinds   # -> expor
 uv run signal eval --contacts --market pac_poultry_houses             # after filling eval/review_contacts_<market>.csv -> eval/results_contacts_<market>.md
 ```
 
-The CRM file's columns are Company, Homepage, Target, Division, Role, Street address, City, State, ZIP, Phone, Comments, and Lead Source. Target and Division come from the brief (`crm_target`, `crm_market`). A field with no matching map listing stays blank. `eval/leads_<market>.csv` is the internal sheet with every activity, evidence URL, and source. Roles and map lookups are cached, so exporting again costs nothing unless the stage-2 prompt or brief changed.
+The CRM file's columns are Company, Homepage, Target, Division, Role, Street address, City, State, ZIP, Phone, Comments, Lead Source, and CRM Status (the company's role in the CRM list it came from, such as Lead or Customer; blank for companies SIGNAL found that aren't on it). Target and Division come from the brief (`crm_target`, `crm_market`). A field with no matching map listing stays blank. `eval/leads_<market>.csv` is the internal sheet with every activity, evidence URL, and source. Roles and map lookups are cached, so exporting again costs nothing unless the stage-2 prompt or brief changed.
 
 Fetched pages and search results are cached in `.cache/` (git-ignored), so re-running after a brief or prompt change only costs the LLM calls. Delete `.cache/` to refetch.
 

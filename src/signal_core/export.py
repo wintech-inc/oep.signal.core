@@ -20,7 +20,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from signal_core.companies import is_social
+from signal_core.companies import Company, is_social, load_companies
 from signal_core.discover import (
     CONTACT_FIELDS, EVAL_DIR, STATE_CODES, US_STATES, Discovery, display_name, lead_url, norm_name, parse_town,
     same_place, state_of, write_leads,
@@ -30,7 +30,7 @@ from signal_core.role import role_url
 
 EXPORTS_DIR = ROOT / "exports"
 CRM_COLUMNS = ["Company", "Homepage", "Target", "Division", "Role", "Street address", "City", "State", "ZIP", "Phone",
-               "Comments", "Lead Source"]
+               "Comments", "Lead Source", "CRM Status"]
 LEAD_SOURCE = "SIGNAL"
 MAX_COST = 10.0
 SPOT_CHECK = 25
@@ -141,14 +141,20 @@ def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dic
         for i in members:
             if i == best:
                 continue
-            for column in ("Street address", "City", "State", "ZIP", "Phone"):
+            for column in ("Street address", "City", "State", "ZIP", "Phone", "CRM Status"):
                 row[column] = row[column] or rows[i][column]
             merged.append((row, rows[i]))
         kept.append((best, row))
     return [row for _, row in sorted(kept, key=lambda x: x[0])], merged
 
 
-def crm_row(market: Market, c: dict) -> dict:
+def crm_status(company: Company | None) -> str:
+    """The company's role in the CRM list it came from ('Lead', 'Customer', ...), blank when it isn't on it.
+    The few companies with several CRM rows get each distinct role, alphabetically."""
+    return "; ".join(sorted({t.role for t in company.crm})) if company else ""
+
+
+def crm_row(market: Market, c: dict, known: dict[str, Company] | None = None) -> dict:
     ct = c.get("contact") or {}
     url = role_url(c)
     return {
@@ -157,7 +163,7 @@ def crm_row(market: Market, c: dict) -> dict:
         "Street address": ct.get("street", ""), "City": ct.get("city", ""), "State": ct.get("state", ""),
         "ZIP": ct.get("zip", ""), "Phone": ct.get("phone", ""),
         "Comments": (c.get("comment") or "").strip() + (f" Source: {url}" if url else ""),
-        "Lead Source": LEAD_SOURCE,
+        "Lead Source": LEAD_SOURCE, "CRM Status": crm_status((known or {}).get(c["company_id"])),
         "_url": c["url"], "_maps": ct.get("maps_url", ""),
     }
 
@@ -211,7 +217,8 @@ async def export(market: Market, max_cost: float = MAX_COST) -> dict:
     not_ready = len(ins) - len(ready)
     ours = {c["company_id"] for c in ready if is_supplier(display_name(c), market.supplier)}
     ready = [c for c in ready if c["company_id"] not in ours]
-    rows, merged = merge_duplicates([crm_row(market, c) for c in ready])
+    known = {k.id: k for k in load_companies()}
+    rows, merged = merge_duplicates([crm_row(market, c, known) for c in ready])
     paths = {"crm": EXPORTS_DIR / f"crm_{market.id}.csv", "leads": write_leads(market.id, d.state),
              "report": EVAL_DIR / f"export_{market.id}.md", "contacts": EVAL_DIR / f"review_contacts_{market.id}.csv"}
     write_csv(paths["crm"], CRM_COLUMNS, rows)

@@ -1,4 +1,5 @@
-from signal_core.export import contact, homepage, is_supplier, merge_duplicates, phone_digits, split_address
+from signal_core.companies import Company
+from signal_core.export import contact, crm_status, homepage, is_supplier, merge_duplicates, phone_digits, split_address
 
 
 def test_split_address():
@@ -40,7 +41,7 @@ def test_contact_takes_the_matching_listing_only():
 
 def row(company, url, home, phone="", city=""):
     return {"Company": company, "Homepage": home, "Phone": phone, "City": city, "Street address": "", "State": "",
-            "ZIP": "", "_url": url}
+            "ZIP": "", "CRM Status": "", "_url": url}
 
 
 def test_merge_duplicates_keeps_the_own_site_row():
@@ -58,3 +59,11 @@ def test_merge_duplicates_keeps_the_own_site_row():
     assert [(a["_url"], b["_url"]) for a, b in merged] == [
         ("https://strandagsupply.com", "https://facebook.com/strandag"), ("https://www.x.com", "https://news.com/x-co-opens")]
     assert phone_digits("+1 (555) 010-0000") == phone_digits("555.010.0000") == "5550100000"
+
+
+def test_crm_status():
+    assert crm_status(None) == ""
+    company = Company(id="a.com", name="A", url="https://a.com",
+                      crm=[{"market": "Poultry", "role": "Lead"}, {"market": "Agriculture", "role": "Lead"},
+                           {"market": "Poultry", "role": "Customer"}])
+    assert crm_status(company) == "Customer; Lead"
