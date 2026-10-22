@@ -1,6 +1,6 @@
 # M4: Market roles and CRM export
 
-Status: draft for discussion with Tim (planning thread, 2026-10-22). Role names and the one-role rule agreed 2026-10-22. Implementation happens in a separate thread.
+Status: agreed with Tim on 2026-10-22 in the M4 planning thread. Implementation happens in a separate thread.
 
 Background and definitions: [project_overview.md](../project_overview.md). The stages this builds on: [M1_market_classifier.md](M1_market_classifier.md), [M2_role_classifier.md](M2_role_classifier.md), [M3_company_discovery.md](M3_company_discovery.md).
 
@@ -82,13 +82,13 @@ class Activity(BaseModel):
     evidence_url: str | None      # the page that shows it, required when yes
 
 class RoleAnswer(BaseModel):
-    name: str                     # the company's proper name as its own pages give it
+    name: str                       # the company's proper name as its own pages give it
     makes_end_product: Activity     # makes the end product                          -> Manufacturer
     makes_component: Activity       # makes doors/windows for it, sold to others      -> Component Manufacturer
     resells_component: Activity     # resells other makers' doors/windows for it      -> Component Reseller
     resells_supplies: Activity      # resells other parts, equipment, materials for it -> Supply Reseller
     resells_end_product: Activity   # resells finished end products made by others    -> Reseller
-    comment: str                  # one or two plain sentences for a salesperson
+    comment: str                    # one or two plain sentences for a salesperson
 ```
 
 `role` is derived in code from the flags using the order in section 2. As in M2, a yes whose URL isn't in the evidence is kept and flagged as weak in the eval.
@@ -192,12 +192,13 @@ markets/*.json, schema.json      # new role values in examples_in, crm_target, b
 src/signal_core/markets.py       # Example.role values, Market.crm_target
 src/signal_core/role.py          # RoleAnswer with activities; role derived by precedence
 src/signal_core/evidence.py      # places() keeps phone and full address
-src/signal_core/discover.py      # verdict cache split by stage; leads sheet gets the flags
+src/signal_core/discover.py      # verdict cache split by stage; leads sheet and report use the new roles
 src/signal_core/export.py        # new: maps lookup, address split, duplicate merge, CRM CSV
 src/signal_core/eval.py          # role review, freeze, metrics for the new roles; contact spot check sheet
 src/signal_core/cli.py           # `signal export`
 data/reference_roles.json        # relabeled
 exports/crm_<market>.csv         # the files for sales
+README.md, CLAUDE.md             # commands updated (`signal role` description, `signal export`)
 tests/                           # a few small unit tests: role precedence, address split, homepage form, merge
 ```
 
