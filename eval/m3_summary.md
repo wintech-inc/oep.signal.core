@@ -2,34 +2,36 @@
 
 Results of the first discovery runs for the two PAC markets, measured against the acceptance targets in [M3_company_discovery.md](../docs/milestones/M3_company_discovery.md) (section 7). The full reports are `eval/discovery_<market>.md` (full run), `eval/discovery_<market>.blind.md` (no seed list), and `eval/probe_<market>.md`. The sales list is `eval/leads_<market>.csv`.
 
+The numbers below are after the geography fix (2026-10-22, see "Geography" at the end). The spot check showed that most wrong poultry verdicts were companies based abroad, so the brief's geography is now a hard boundary, and the in-market companies of both full runs were classified again under it.
+
 ## Headline
 
 | | Hunting blinds | Poultry houses |
 |---|---|---|
-| In-market companies found | **1,144** | **560** |
-| Seed list in-market | 147 | 63 |
-| Multiple of the seed list | **7.8x** | **8.9x** (7.0x counting only likely-US companies) |
-| Not on the seed list | 997 | 497 |
-| Customer or both (sales leads) | 712 (62%) | 448 (80%) |
-| Competitor only | 10 | 24 |
-| Neither (mostly dealers of finished blinds) | 422 | 87 |
-| Likely outside the US (marked, not filtered) | 2 | 119 |
-| Capture-recapture estimate of the reachable market | about 1,383 | about 629 |
+| In-market companies found | **1,060** (1,144 before the fix) | **279** (560 before the fix) |
+| Seed list in-market | 145 | 59 |
+| Multiple of the seed list | **7.3x** | **4.7x** |
+| Not on the seed list | 915 | 220 |
+| Customer or both (sales leads) | 677 (64%) | 244 (87%) |
+| Competitor only | 12 | 9 |
+| Neither (mostly dealers of finished blinds) | 371 | 26 |
+| Capture-recapture estimate of the reachable market | about 1,258 | about 296 |
 
-Both lists are many times the seed list, and neither market is saturated yet (see below).
+Both lists are several times the seed list. Poultry's US market is small: the estimate of the reachable market (about 296) is close to what was found. Blinds is not saturated (see below).
 
 ## Against the targets
 
 | Target | Hunting blinds | Poultry houses | |
 |---|---|---|---|
 | Blind run re-finds the seed list's in-market companies, or each miss is diagnosed | 137 of 147 (93%) | 59 of 63 (94%) | misses diagnosed below |
-| Multiple of the seed list | 7.8x | 8.9x | reported |
+| Multiple of the seed list | 7.3x | 4.7x | reported |
 | Last round adds under 2% new in-market companies | 38% | 33% | **not met** (stopped on budget) |
 | Probe finds at least 95% already on the list | 112 of 116 (97%) | 28 of 37 (76%) | blinds met, poultry **missed** (see below) |
-| Spot check: at least 90% of sampled `in` verdicts right | 25 of 25 (100%) | 10 of 25 (40%) | blinds met, poultry **missed**: 13 of the 15 wrong are outside the US |
+| Spot check: at least 90% of sampled `in` verdicts right | 24 of 24 (100%) | 9 of 9 (100%) | met after the geography fix (poultry was 9 of 25 before it) |
 | Cost under $30 for a first full run plus about $3 for the probe | $46.64 | $33.81 | **not met** |
 | Re-run with nothing changed under $3 | not measured | not measured | verdict and search caches make it near zero |
 | Full run under two hours | 87 min | 79 min | met |
+| M1 eval after the geography change (targets: recall ≥ 95%, precision ≥ 90%) | R100 / P96 | R91 / P100 (93% after relabeling Penner, see below) | blinds met, poultry recall **missed** |
 
 The blind runs ran with a $7 cap each and stopped on budget with a backlog (5,394 and 2,631 candidates not yet classified), so their floor numbers are a lower bound.
 
@@ -62,16 +64,27 @@ Every source contributed in-market companies no other source found (the "Only th
 
 ## Known weak spots (for later milestones)
 
-- **Non-US companies in poultry.** About 119 of 560 are likely outside the US, mostly Canadian provinces and overseas equipment makers. They are marked in the leads sheet's `outside_us` column and counted in the report, not filtered, per the plan.
 - **Same company twice.** A company's Facebook page and its website can appear as two rows.
 - **Junk lead names.** Lists and maps return many forum titles ("What's the best box blind for SE Iowa?") that the resolver correctly drops (1,266 and 4,447 dropped names). They cost one search and one small model call each.
 - **Generic suppliers called in** (see the poultry probe). An M1 note, not a discovery change.
 
-## Spot check
+## Spot check and geography
 
 Tim labeled 25 `in` and 25 `out`/`unknown` discovered companies per market ([blinds](results_discovery_pac_hunting_blinds.md), [poultry](results_discovery_pac_poultry_houses.md)). No in-market company turned up in either `out` sample.
 
 - **Blinds:** all 25 `in` verdicts right.
 - **Poultry:** 10 of 25 right. 13 of the 15 wrong ones are outside the contiguous US (Germany, France, India, Greece, Türkiye, Colombia, the UK, Canada). Of the other two, one is a heater maker M1 let in under rule B, and the other is Big Dutchman's Facebook page, judged from a post about another company.
 
-**Geography is not enforced anywhere.** The brief says contiguous US only, but M1 judges the market rule alone, so a German poultry equipment maker is `in`. Discovery then expands from it: in-market companies' towns become `nearby` searches (poultry searched around 17 Canadian towns) and their sites get snowballed. Most foreign poultry companies first came from international list pages (UK and Indian trade-show exhibitor lists, the Canadian Poultry buyers' guide, a by-country company directory). Blinds is a domestic market and barely drifts (2 of 1,144). The `outside_us` marker catches only a country domain or a non-US province, so it undercounts: it flagged 119 poultry companies but only 6 of the 14 foreign ones in the sample. The real share of discovered poultry companies outside the US may be close to half.
+**What the spot check found: geography was not enforced anywhere.** The brief says contiguous US only, but M1 judges the market rule alone, so a German poultry equipment maker is `in`. Discovery then expands from it: in-market companies' towns become `nearby` searches (poultry searched around 17 Canadian towns) and their sites get snowballed. Most foreign poultry companies first came from international list pages (UK and Indian trade-show exhibitor lists, the Canadian Poultry buyers' guide, a by-country company directory). Blinds is a domestic market and barely drifts (2 of 1,144). The `outside_us` marker catches only a country domain or a non-US province, so it undercounts: it flagged 119 poultry companies but only 6 of the 14 foreign ones in the sample. The real share of discovered poultry companies outside the US may be close to half.
+
+**The fix (Tim's rule, 2026-10-22).** The brief's `countries` and `search_locations` (the 48 contiguous states) are a hard boundary; `priority_states` are soft and only steer searching. A candidate known to be based outside the boundary (a state or province code outside it, a country the list reader or model reports, or another country's domain) is out without being classified. M1's market rule now also says a company based outside the geography is OUT, for companies whose location only the evidence shows. Nearby searches and snowballing start only from in-market companies, so they stay inside the boundary.
+
+**Re-check of the full runs** (`signal discover --recheck --rounds 0`, $1.65):
+
+- Poultry: 560 to 279 in-market. The gate removed 119 without a call, and M1 removed 162: about 126 on geography, and about 36 on run-to-run variance in borderline cases (16 of them now `unknown`).
+- Blinds: 1,144 to 1,060. The gate removed 2, and M1 removed 82: about 19 on geography, and about 63 on variance in thin-evidence cases (Facebook posts, prefab cabin builders), mostly now `unknown`.
+- Spot check rescored on the same labels: poultry 9 of 9 `in` right, and none of the 41 out or unknown is in-market. Blinds 24 of 24 right, and 1 of 26 out or unknown is in-market (East Texas Trailers, which flipped to `out`).
+
+**M1 eval after the change.** Blinds R100 / P96: two companies labeled out came out `in` on thin evidence (Meyer Distributing, TX Duck Blinds), which is run-to-run variance. Poultry R91 / P100. Penner Farm Services (Manitoba and Alberta) is now out on geography, as the rule intends, so its reference label was changed to out; that gives 42 of 45 (93%). The other misses are GPC Poultry Supply & Hardware (a hardware store and lumberyard, borderline, and judged differently between runs before) and Summit Livestock (missed before the change too).
+
+The blind runs were not re-checked, so their reports still include companies based abroad.
