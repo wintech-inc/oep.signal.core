@@ -163,19 +163,28 @@ def town_of(c: dict) -> str | None:
     return parse_town(c.get("based_in")) or parse_town(c.get("location"))
 
 
+def is_foreign_phone(phone: str | None) -> bool:
+    """A number written with a country code other than +1."""
+    return bool(phone) and phone.startswith("+") and not phone.startswith("+1")
+
+
 def abroad(c: dict, home: set[str]) -> str | None:
     """Why stage 2, the map listing, or the company's own pages place it outside the market's geography (a
-    country other than the US, a state outside `home`, an address in no US state, a phone number with another
-    country's code). None if nothing does."""
+    country other than the US, a state or province outside `home`, a phone number with another country's code).
+    A listing address with no state at all (often just a street) says nothing. Stage 2 placing the company in
+    a US state inside `home` settles it: a foreign number then belongs to a parent company or a same-named
+    business, and is left out of the export instead. None if nothing does."""
     ct, site = c.get("contact") or {}, c.get("site_contact") or {}
     if c.get("based_country") and c["based_country"].lower() not in US_NAMES:
         return f"stage 2 places it in {', '.join(x for x in (c.get('based_in'), c['based_country']) if x)}"
     if (state := state_of(town_of(c))) and home and state not in home:
         return f"based in {town_of(c)}"
-    if ct.get("address") and not ct.get("state") and not split_address(ct["address"])["state"]:
+    if state and c.get("based_country"):
+        return None
+    if (state := state_of(ct.get("address"))) and home and state not in home:   # a province or a state outside it
         return f"map listing address {ct['address']}"
     for source, phone in (("map listing", ct.get("phone")), (site.get("source"), site.get("phone"))):
-        if phone and phone.startswith("+") and not phone.startswith("+1"):
+        if is_foreign_phone(phone):
             return f"{source} phone {phone}"
     if site.get("country") and site["country"].lower() not in US_NAMES:
         return f"{site['source']} address in {site['country']}"
@@ -273,6 +282,8 @@ def crm_matches(c: dict, known: dict[str, Company], by_name: dict[str, list[Comp
 
 def crm_row(market: Market, c: dict, crm: list[Company] = ()) -> dict:
     ct = merged_contact(c)
+    if is_foreign_phone(ct["phone"]):
+        ct["phone"] = ""
     url = role_url(c)
     return {
         "Company": display_name(c),

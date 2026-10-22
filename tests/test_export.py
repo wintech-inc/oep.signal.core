@@ -69,9 +69,13 @@ def test_abroad():
     assert abroad({"based_in": "Waco, TX", "based_country": "US"}, home) is None
     assert "India" in abroad({"based_in": "Pune", "based_country": "India"}, home)
     assert "Anchorage, AK" in abroad({"based_in": "Anchorage, AK", "based_country": "US"}, home)
-    assert "map listing address" in abroad({"contact": {"address": "Calle 5, Rosario, Santa Fe, Argentina", "state": ""}}, home)
+    assert "map listing address" in abroad({"contact": {"address": "12 Pembina Hwy, Winnipeg, MB R3T 2N2", "state": ""}}, home)
+    assert abroad({"contact": {"address": "1845 US-62", "state": ""}}, home) is None   # a street only
+    assert abroad({"contact": {"address": "12 Main St, San Antonio", "state": ""}}, home) is None
     assert "+44" in abroad({"contact": {"address": "", "phone": "+44 1568 708819"}}, home)
     assert abroad({"contact": {"address": "", "phone": "+1 254-555-0100"}}, home) is None
+    # Stage 2 placing it in a home state wins over a parent company's foreign number.
+    assert abroad({"based_in": "Luverne, AL", "based_country": "US", "site_contact": {"source": "website", "phone": "+39 0444 000000"}}, home) is None
     assert "Canada" in abroad({"site_contact": {"source": "website", "country": "Canada"}}, home)
 
 
