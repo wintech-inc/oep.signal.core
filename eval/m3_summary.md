@@ -31,7 +31,7 @@ Both lists are several times the seed list. Poultry's US market is small: the es
 | Cost under $30 for a first full run plus about $3 for the probe | $46.64 | $33.81 | **not met** |
 | Re-run with nothing changed under $3 | not measured | not measured | verdict and search caches make it near zero |
 | Full run under two hours | 87 min | 79 min | met |
-| M1 eval after the geography change (targets: recall ≥ 95%, precision ≥ 90%) | R100 / P96 | R91 / P100 (93% after relabeling Penner, see below) | blinds met, poultry recall **missed** |
+| M1 eval after the geography change (targets: recall ≥ 95%, precision ≥ 90%) | R100 / P96 | R91 / P100, unknown 6% | blinds met, poultry recall **missed** (borderline cases vary run to run) |
 
 The blind runs ran with a $7 cap each and stopped on budget with a backlog (5,394 and 2,631 candidates not yet classified), so their floor numbers are a lower bound.
 
@@ -85,6 +85,6 @@ Tim labeled 25 `in` and 25 `out`/`unknown` discovered companies per market ([bli
 - Blinds: 1,144 to 1,060. The gate removed 2, and M1 removed 82: about 19 on geography, and about 63 on variance in thin-evidence cases (Facebook posts, prefab cabin builders), mostly now `unknown`.
 - Spot check rescored on the same labels: poultry 9 of 9 `in` right, and none of the 41 out or unknown is in-market. Blinds 24 of 24 right, and 1 of 26 out or unknown is in-market (East Texas Trailers, which flipped to `out`).
 
-**M1 eval after the change.** Blinds R100 / P96: two companies labeled out came out `in` on thin evidence (Meyer Distributing, TX Duck Blinds), which is run-to-run variance. Poultry R91 / P100. Penner Farm Services (Manitoba and Alberta) is now out on geography, as the rule intends, so its reference label was changed to out; that gives 42 of 45 (93%). The other misses are GPC Poultry Supply & Hardware (a hardware store and lumberyard, borderline, and judged differently between runs before) and Summit Livestock (missed before the change too).
+**M1 eval after the change.** Blinds R100 / P96: two companies labeled out came out `in` on thin evidence (Meyer Distributing, TX Duck Blinds), which is run-to-run variance. Poultry R91 / P100. Penner Farm Services (Manitoba and Alberta) is now out on geography, as the rule intends, so its reference label was changed to out. Rescored after that relabel, recall is still 41 of 45 (91%), because the eval classifies again and borderline companies flip between runs: Energy Panel Structures, Summit Livestock and R&L Construction came back `unknown`, and GPC Poultry Supply & Hardware `out`. Three of the four have reviewer notes pointing to poultry pages that M1's evidence search did not find, so the lever is better evidence gathering (already noted after M1), not the market rule.
 
 The blind runs were not re-checked, so their reports still include companies based abroad.
