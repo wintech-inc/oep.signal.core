@@ -32,7 +32,15 @@ uv run signal role <url> --market <market_id>         # both stages: market, the
 uv run signal review --roles --market <market_id>     # role reference set -> eval/review_roles_<market_id>.csv
 uv run signal freeze --roles --market <market_id>     # -> data/reference_roles.json
 uv run signal eval --roles --market <market_id>       # stage-2 accuracy against the role reference set
+uv run signal queries --market <market_id>            # first version of markets/<market_id>.discovery.json (search wording)
+uv run signal discover --market <market_id>           # discovery (M3) -> data/discovery/, eval/leads_*, eval/discovery_*.md
+uv run signal discover --market <market_id> --no-seeds   # blind run: must re-find the seed list's in-market companies
+uv run signal probe --market <market_id>              # fresh-eyes completeness check -> eval/probe_<market_id>.md
+uv run signal report --market <market_id>             # rewrite discovery report + leads sheet from stored state, no new searches
+uv run signal review|freeze|eval --discovered --market <market_id>   # spot check of M1 on discovered companies
 ```
+
+Discovery (`discover.py`, `prompts/discovery_queries.md`, `more_companies.md`, `read_list.md`, `resolve_lead.md`) calls both classifier stages unchanged. Every lead list comes from a `signal` command: no ad hoc scripts that search, extract, filter, or edit leads. Never restrict or drop a discovery source without Tim.
 
 Stage 1 (M1, `prompts/screen_market.md`) must not change when working on stage 2 (`prompts/classify_role.md`, `role.py`).
 

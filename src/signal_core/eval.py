@@ -259,3 +259,63 @@ def role_report(market: Market, results: list[dict], labels: dict[str, dict]) ->
     lines += ["", "## Yes answers without an evidence URL from the evidence", ""]
     lines += [f"- **{r['name']}** ({r['url']}): {r['weak_evidence']}." for r in m["weak"]] or ["None."]
     return "\n".join(lines) + "\n"
+
+
+# Discovery spot check (M3 plan section 7)
+
+DISCOVERY_REFERENCE_PATH = ROOT / "data" / "reference_discovery.json"
+DISCOVERY_SAMPLE = 25
+DISCOVERY_SHEET_COLUMNS = ["company_id", "name", "url", "location", "sample", "verdict", "rule", "reason",
+                           "evidence_url", "found_by", "label", "note"]
+DISCOVERY_TARGET = 0.90
+
+
+def discovery_sheet_path(market_id: str) -> Path:
+    return EVAL_DIR / f"review_discovery_{market_id}.csv"
+
+
+def discovery_sample(candidates: dict[str, dict], n: int = DISCOVERY_SAMPLE, seed: int = SEED) -> list[dict]:
+    """n discovered companies (not on the seed list) M1 called in, and n it called out or unknown."""
+    found = sorted((c for c in candidates.values() if not c["seed"]), key=lambda c: c["company_id"])
+    rng = random.Random(seed)
+    rows = []
+    for name, verdicts in (("in", ("in",)), ("out", ("out", "unknown"))):
+        pool = [c for c in found if c.get("verdict") in verdicts]
+        rows += [{**c, "sample": name} for c in rng.sample(pool, min(n, len(pool)))]
+    return rows
+
+
+def write_discovery_sheet(path: Path, rows: list[dict]) -> None:
+    path.parent.mkdir(exist_ok=True)
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=DISCOVERY_SHEET_COLUMNS, extrasaction="ignore")
+        writer.writeheader()
+        for r in rows:
+            writer.writerow({**r, "found_by": "; ".join(x["detail"] for x in r["found_by"][:3]), "label": "", "note": ""})
+
+
+def discovery_report(market: Market, candidates: dict[str, dict], labels: dict[str, dict]) -> str:
+    """Precision of M1's in verdicts on discovered companies, and the companies it missed in the out sample."""
+    rows = [(candidates[k], l) for k, l in labels.items() if k in candidates]
+    said_in = [(c, l) for c, l in rows if c.get("verdict") == "in"]
+    said_out = [(c, l) for c, l in rows if c.get("verdict") != "in"]
+    right = sum(1 for _, l in said_in if l["label"] == "in")
+    precision = right / len(said_in) if said_in else None
+    missed = [(c, l) for c, l in said_out if l["label"] == "in"]
+    lines = [
+        f"# Discovery spot check: {market.name} (`{market.id}`)", "",
+        f"Tim reviewed {len(rows)} discovered companies (not on the seed list): {len(said_in)} M1 called in, "
+        f"{len(said_out)} it called out or unknown.", "",
+        "| Measure | Result | Target | |", "|---|---|---|---|",
+        f"| `in` verdicts right | {right} of {len(said_in)}" + (f" ({precision:.0%})" if precision is not None else "")
+        + f" | ≥ {DISCOVERY_TARGET:.0%} | " + ("n/a" if precision is None else "met" if precision >= DISCOVERY_TARGET else "**missed**") + " |",
+        f"| In-market companies in the out sample | {len(missed)} of {len(said_out)} | reported | |", "",
+        "## Wrong `in` verdicts", "",
+    ]
+    wrong = [(c, l) for c, l in said_in if l["label"] != "in"]
+    lines += [f"- **{c['name']}** ({c['url']}): {c['reason']}" + (f" Reviewer note: {l['note']}" if l["note"] else "")
+              for c, l in wrong] or ["None."]
+    lines += ["", "## In-market companies M1 called out or unknown", ""]
+    lines += [f"- **{c['name']}** ({c['url']}), verdict `{c.get('verdict')}`: {c['reason']}"
+              + (f" Reviewer note: {l['note']}" if l["note"] else "") for c, l in missed] or ["None."]
+    return "\n".join(lines) + "\n"

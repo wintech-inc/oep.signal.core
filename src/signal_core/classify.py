@@ -31,6 +31,14 @@ def _bullets(items: list[str]) -> str:
     return "\n".join(f"- {item}" for item in items) or "- (none)"
 
 
+def boundary(market: Market) -> str:
+    """The brief's hard geography. Its priority states only steer searching and are not shown here."""
+    g = market.geography
+    if not g:
+        return "Anywhere."
+    return f"Companies must be based in {', '.join(g.countries)}" + (f", in one of: {', '.join(g.search_locations)}." if g.search_locations else ".")
+
+
 @cache
 def system_prompt(market_id: str) -> str:
     market = load_market(market_id)
@@ -41,6 +49,7 @@ def system_prompt(market_id: str) -> str:
         not_included=_bullets(market.end_product.not_included),
         our_terms=", ".join(market.our_products.terms),
         notes=_bullets(market.notes),
+        geography=boundary(market),
         examples=_bullets([f"{e.name} ({e.url}): IN under rule {e.rule}" for e in market.examples_in]),
     )
 

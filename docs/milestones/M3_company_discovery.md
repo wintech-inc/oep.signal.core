@@ -102,6 +102,13 @@ All search wording lives in `markets/<market_id>.discovery.json`, one per market
 
 **Search locations.** The brief's `geography` gains an optional `search_locations` list. Both briefs get the 48 contiguous states. Geography is used only to spread the searches; nothing is filtered by location, and M1 still ignores it. There is no map grid: towns come from where companies are actually found (`nearby`).
 
+**Geography: hard and soft (changed with Tim after the spot check, 2026-10-22).** The spot check found most poultry `in` errors were companies based abroad, and discovery kept expanding from them. Tim's rule:
+
+- **Hard:** the brief's `countries` and `search_locations` (both briefs: the 48 contiguous states) are a boundary. A candidate known to be based outside it (a state or province code outside the list, a country the list reader or model reports, or another country's domain) is `out` without classifying. M1's market rule also says a company based outside the geography is OUT, for those whose location only the evidence shows. Nearby searches and snowballing only start from in-market companies, so they stay inside the boundary.
+- **Soft:** `priority_states` only say where companies are most common. They may steer searching and are never a boundary.
+
+`signal discover --recheck --rounds 0` re-classifies the in-market companies of an earlier run under the current prompts.
+
 ## 5. Outputs
 
 - **`data/discovery/<market_id>.json`**: every candidate ever found for the market, with its `found_by` entries, round, location when known, whether it was in the seed list, and both stages' results (the same fields as `eval/roles_<market>.csv`). Also the paging and town state, so a later run continues where the last stopped. This is the market list until there is a database. It is committed, and later runs only classify candidates that aren't in it yet (`--reclassify` redoes them, for example after a brief change).
@@ -145,7 +152,7 @@ Nobody knows how big these markets are, so there is no target count. The evidenc
 - candidates, in-market companies, and roles found per source, and the in-market companies only that source found (its unique contribution);
 - new in-market companies per round (the saturation curve), and how deep the productive queries went;
 - source overlap and the market-size estimate;
-- in-market companies per state, and how many are outside the contiguous US (shown, not filtered);
+- in-market companies per state, and how many candidates were out without classifying because they are based outside the geography;
 - leads dropped because no website was found;
 - searches, LLM calls, cost, run time, and whether the run stopped on budget.
 

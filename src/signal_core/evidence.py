@@ -1,5 +1,6 @@
 """Evidence for the classifiers: the company's homepage text and one Serper site search (stage 1),
-plus one Serper search for products like ours (stage 2).
+plus one Serper search for products like ours (stage 2). Discovery (M3) adds paged web search,
+Serper places (map) search, and page text with its links for the list reader.
 
 Every fetch and search result is cached in .cache/ so re-runs only pay for LLM calls.
 Delete .cache/ (or a subfolder) to refetch.
@@ -10,7 +11,7 @@ import hashlib
 import json
 import os
 import re
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 import httpx
 from selectolax.lexbor import LexborHTMLParser
@@ -23,6 +24,9 @@ PAGE_CHARS = 6000
 SEARCH_RESULTS = 10
 # Google ignores query words past the 32nd, so terms beyond that are left out.
 MAX_QUERY_WORDS = 32
+# Discovery: the list reader reads up to LIST_CHUNKS chunks of LIST_CHUNK_CHARS characters per page.
+LIST_CHUNK_CHARS = 40_000
+LIST_CHUNKS = 5
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/130.0 Safari/537.36"
@@ -56,6 +60,22 @@ def page_text(html: str, limit: int = PAGE_CHARS) -> str:
         (meta.attributes.get("content") or "") if meta else "",
         tree.body.text(separator=" ", strip=True) if tree.body else "",
     ]
+    return re.sub(r"\s+", " ", " | ".join(p for p in parts if p)).strip()[:limit]
+
+
+def text_with_links(html: str, base_url: str, limit: int = LIST_CHUNK_CHARS * LIST_CHUNKS) -> str:
+    """Title and visible text with each link written inline after its text: `Acme Co [https://acme.com]`."""
+    tree = LexborHTMLParser(html)
+    title = tree.css_first("title")
+    tree.strip_tags(["script", "style", "noscript", "svg", "template", "iframe"])
+    for a in tree.css("a"):
+        href = (a.attributes.get("href") or "").strip()
+        text = a.text(separator=" ", strip=True)
+        if href and not href.startswith(("#", "javascript:", "tel:")):
+            a.replace_with(f" {text} [{urljoin(base_url, href)}] ")
+        else:
+            a.replace_with(f" {text} ")
+    parts = [title.text(strip=True) if title else "", tree.body.text(separator=" ", strip=True) if tree.body else ""]
     return re.sub(r"\s+", " ", " | ".join(p for p in parts if p)).strip()[:limit]
 
 
@@ -100,6 +120,7 @@ class Fetcher:
         )
         self.serper_key = os.environ.get("SERPER_API_KEY")
         self.searches = 0
+        self.refusals, self.refusal = 0, ""   # Serper client errors in a row, and the last one's message
 
     async def __aenter__(self):
         return self
@@ -158,6 +179,63 @@ class Fetcher:
             for o in r.json().get("organic", [])[:SEARCH_RESULTS]
         ]
         return cache_put("search", query, {"query": query, "results": results})
+
+    async def _serper(self, endpoint: str, body: dict) -> dict:
+        if not self.serper_key:
+            raise SystemExit("SERPER_API_KEY is not set (add it to .env)")
+        for attempt in range(3):   # Serper sometimes times out or answers 5xx under load: try again
+            try:
+                async with self.limit:
+                    r = await self.http.post(f"https://google.serper.dev/{endpoint}", json=body,
+                                             headers={"X-API-KEY": self.serper_key})
+                if r.status_code < 500 or attempt == 2:
+                    break
+            except httpx.TransportError:
+                if attempt == 2:
+                    raise
+            await asyncio.sleep(2 ** (attempt + 1))
+        if 400 <= r.status_code < 500 and r.status_code != 429:
+            self.refusals += 1
+            self.refusal = f"HTTP {r.status_code} {r.text[:150]}"
+        else:
+            self.refusals = 0
+        r.raise_for_status()
+        self.searches += 1
+        return r.json()
+
+    async def web_page(self, query: str, page: int = 1) -> dict:
+        """One page (10 results) of a web search. Discovery's paged search, cached apart from `search`."""
+        key = f"{page}|{query}"
+        if cached := cache_get("web", key):
+            return cached
+        data = await self._serper("search", {"q": query, "num": SEARCH_RESULTS, "page": page, "gl": "us"})
+        results = [{"title": o.get("title", ""), "link": o.get("link", ""), "snippet": o.get("snippet", "")}
+                   for o in data.get("organic", [])]
+        return cache_put("web", key, {"query": query, "page": page, "results": results})
+
+    async def places(self, query: str, page: int = 1) -> dict:
+        """One page of a Serper places (map) search: name, address, website, category of each place."""
+        key = f"{page}|{query}"
+        if cached := cache_get("places", key):
+            return cached
+        data = await self._serper("places", {"q": query, "page": page, "gl": "us"})
+        results = [{"title": o.get("title", ""), "address": o.get("address", ""), "website": o.get("website") or None,
+                    "category": o.get("category", "")} for o in data.get("places", [])]
+        return cache_put("places", key, {"query": query, "page": page, "results": results})
+
+    async def list_page(self, url: str) -> dict:
+        """A page's text with its links inline, for the list reader."""
+        if cached := cache_get("listpages", url):
+            return cached
+        async with self.limit:
+            try:
+                r = await self.http.get(url)
+                html = "html" in r.headers.get("content-type", "html")
+                result = {"url": url, "final_url": str(r.url), "status": r.status_code,
+                          "text": text_with_links(r.text, str(r.url)) if html and r.status_code < 400 else "", "error": None}
+            except (httpx.HTTPError, UnicodeDecodeError) as e:
+                result = {"url": url, "final_url": None, "status": None, "text": "", "error": f"{type(e).__name__}: {e}"[:200]}
+        return cache_put("listpages", url, result)
 
     async def evidence(self, company: Company, market: Market) -> dict:
         query = search_query(company, market)

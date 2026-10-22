@@ -47,9 +47,14 @@ class PacProduct(Strict):
 
 
 class Geography(Strict):
-    countries: list[str]
+    countries: list[str] = Field(description="Hard boundary: companies must be based in these countries (ISO codes).")
     note: str
-    priority_states: list[str]
+    priority_states: list[str] = Field(description="Soft: where companies are most common. Only steers searching; never a boundary.")
+    search_locations: list[str] = Field(
+        default_factory=list,
+        description="The hard boundary within the countries: the states or provinces a company must be based in. "
+                    "Discovery searches each one; companies known to be based elsewhere are out without classifying. "
+                    "Priority states only steer searching and are never a boundary.")
 
 
 class Market(Strict):
@@ -77,7 +82,7 @@ def write_schema() -> Path:
 
 
 def market_ids() -> list[str]:
-    return sorted(p.stem for p in MARKETS_DIR.glob("*.json") if p.name != "schema.json")
+    return sorted(p.stem for p in MARKETS_DIR.glob("*.json") if p.name != "schema.json" and "." not in p.stem)
 
 
 def load_market(market_id: str) -> Market:

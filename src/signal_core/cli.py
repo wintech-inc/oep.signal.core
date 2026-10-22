@@ -12,6 +12,13 @@
   signal freeze --roles --market pac_poultry_houses
   signal eval --roles --market pac_poultry_houses
   signal schema
+  signal queries --market pac_hunting_blinds
+  signal discover --market pac_hunting_blinds
+  signal discover --market pac_hunting_blinds --no-seeds
+  signal probe --market pac_hunting_blinds
+  signal review --discovered --market pac_hunting_blinds
+  signal freeze --discovered --market pac_hunting_blinds
+  signal eval --discovered --market pac_hunting_blinds
 """
 
 import argparse
@@ -22,6 +29,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from signal_core import discover as dc
 from signal_core import eval as ev
 from signal_core.classify import Classifier, cost_per_1000
 from signal_core.companies import (
@@ -130,6 +138,17 @@ def cmd_review_roles(args):
 def cmd_review(args):
     if args.roles:
         return cmd_review_roles(args)
+    if args.discovered:
+        for market_id in args.market:
+            state = dc.load_state(market_id)
+            if not state:
+                raise SystemExit(f"No discovery run for {market_id}. Run: signal discover --market {market_id}")
+            rows = ev.discovery_sample(state["candidates"])
+            path = ev.discovery_sheet_path(market_id)
+            ev.write_discovery_sheet(path, rows)
+            print(f"{len(rows)} rows written to {path.relative_to(ROOT)}. Fill in 'label' (in, out, or skip), "
+                  f"then run: signal freeze --discovered --market {market_id}")
+        return
     companies = load_companies()
     for market_id in args.market:
         market = load_market(market_id)
@@ -141,6 +160,11 @@ def cmd_review(args):
 
 
 def cmd_freeze(args):
+    if args.discovered:
+        path = Path(args.sheet) if args.sheet else ev.discovery_sheet_path(args.market)
+        n = ev.freeze(args.market, path, ev.LABELS, ev.DISCOVERY_REFERENCE_PATH)
+        print(f"{n} spot-check labels for {args.market} stored in {ev.DISCOVERY_REFERENCE_PATH.relative_to(ROOT)}")
+        return
     if args.roles:
         path = Path(args.sheet) if args.sheet else ev.role_sheet_path(args.market)
         n = ev.freeze(args.market, path, ev.ROLE_LABELS, ev.ROLE_REFERENCE_PATH)
@@ -174,6 +198,8 @@ def cmd_eval_roles(args):
 def cmd_eval(args):
     if args.roles:
         return cmd_eval_roles(args)
+    if args.discovered:
+        return cmd_eval_discovered(args)
     market = load_market(args.market)
     labels = {l["company_id"]: l for l in ev.load_labels() if l["market_id"] == market.id}
     if not labels:
@@ -188,6 +214,84 @@ def cmd_eval(args):
     path.write_text(text)
     print(text)
     print(f"Written to {path.relative_to(ROOT)}")
+
+
+def cmd_eval_discovered(args):
+    """Spot check of M1 on discovered companies, from the verdicts stored by the discovery run."""
+    market = load_market(args.market)
+    labels = {l["company_id"]: l for l in ev.load_labels(ev.DISCOVERY_REFERENCE_PATH) if l["market_id"] == market.id}
+    state = dc.load_state(market.id)
+    if not labels or not state:
+        raise SystemExit(f"No spot-check labels or discovery run for {market.id}. Run: signal review --discovered, then signal freeze --discovered")
+    text = ev.discovery_report(market, state["candidates"], labels)
+    path = ev.EVAL_DIR / f"results_discovery_{market.id}.md"
+    path.write_text(text)
+    print(text)
+    print(f"Written to {path.relative_to(ROOT)}")
+
+
+def cmd_queries(args):
+    market = load_market(args.market)
+    path = dc.queries_path(market.id)
+    if path.exists() and not args.force:
+        raise SystemExit(f"{path.relative_to(ROOT)} exists; edit it, or use --force to write a new one")
+    queries = asyncio.run(dc.write_queries(market))
+    print(f"{path.relative_to(ROOT)} written: {len(queries.company_queries)} company, {len(queries.nearby_queries)} nearby, "
+          f"{len(queries.list_queries)} list queries, {len(queries.list_terms)} list terms")
+
+
+def _write_discovery_outputs(market, blind: bool) -> list[Path]:
+    state = dc.load_state(market.id, blind)
+    suffix = ".blind" if blind else ""
+    path = ev.EVAL_DIR / f"discovery_{market.id}{suffix}.md"
+    path.write_text(dc.report(market, state))
+    return [path] if blind else [path, dc.write_leads(market.id, state)]
+
+
+async def _discover(market, args):
+    sources = set(args.sources.split(",")) if args.sources else set(dc.SOURCES)
+    unknown = sources - set(dc.SOURCES)
+    if unknown:
+        raise SystemExit(f"Unknown sources: {', '.join(sorted(unknown))}. Sources: {', '.join(dc.SOURCES)}")
+    async with dc.Discovery(market, blind=args.no_seeds, sources=sources, max_cost=args.max_cost,
+                            reclassify=args.reclassify, recheck=args.recheck) as discovery:
+        await discovery.run(args.rounds)
+
+
+def cmd_discover(args):
+    market = load_market(args.market)
+    asyncio.run(_discover(market, args))
+    paths = _write_discovery_outputs(market, args.no_seeds)
+    print(f"Written: {dc.state_path(market.id, args.no_seeds).relative_to(ROOT)}, "
+          + ", ".join(str(p.relative_to(ROOT)) for p in paths))
+
+
+def cmd_report(args):
+    """Rewrite the discovery report (and leads sheet) from the stored market list, without searching."""
+    for market_id in args.market:
+        market = load_market(market_id)
+        if not dc.load_state(market.id, args.no_seeds):
+            raise SystemExit(f"No discovery run for {market.id}{' (--no-seeds)' if args.no_seeds else ''}")
+        paths = _write_discovery_outputs(market, args.no_seeds)
+        print("Written: " + ", ".join(str(p.relative_to(ROOT)) for p in paths))
+
+
+async def _probe(market, args):
+    async with dc.Discovery(market, max_cost=args.max_cost) as discovery:
+        return await discovery.probe(seed=args.seed)
+
+
+def cmd_probe(args):
+    market = load_market(args.market)
+    if not dc.load_state(market.id):
+        raise SystemExit(f"No discovery run for {market.id}. Run: signal discover --market {market.id}")
+    result = asyncio.run(_probe(market, args))
+    path = ev.EVAL_DIR / f"probe_{market.id}.md"
+    text = dc.probe_report(market, result)
+    path.write_text(text)
+    paths = _write_discovery_outputs(market, False)
+    print(text)
+    print(f"Written: {path.relative_to(ROOT)}, " + ", ".join(str(p.relative_to(ROOT)) for p in paths))
 
 
 def cmd_schema(args):
@@ -223,18 +327,49 @@ def main():
     p.add_argument("--market", required=True, nargs="+")
     p.add_argument("--n", type=int, default=ev.SAMPLE_SIZE)
     p.add_argument("--roles", action="store_true", help="Role reference set instead -> eval/review_roles_<market>.csv")
+    p.add_argument("--discovered", action="store_true", help="Spot check of discovered companies -> eval/review_discovery_<market>.csv")
     p.set_defaults(func=cmd_review)
 
     p = sub.add_parser("freeze", help="Store a reviewed sheet in data/reference_labels.json")
     p.add_argument("--market", required=True)
     p.add_argument("--sheet", help="Defaults to eval/review_<market>.csv (with --roles, eval/review_roles_<market>.csv)")
     p.add_argument("--roles", action="store_true", help="Role labels -> data/reference_roles.json")
+    p.add_argument("--discovered", action="store_true", help="Spot-check labels -> data/reference_discovery.json")
     p.set_defaults(func=cmd_freeze)
 
     p = sub.add_parser("eval", help="Measure a market against the reference set")
     p.add_argument("--market", required=True)
     p.add_argument("--roles", action="store_true", help="Measure stage 2 against data/reference_roles.json")
+    p.add_argument("--discovered", action="store_true", help="Spot-check precision on discovered companies")
     p.set_defaults(func=cmd_eval)
+
+    p = sub.add_parser("queries", help="Write the first markets/<market>.discovery.json from the brief")
+    p.add_argument("--market", required=True)
+    p.add_argument("--force", action="store_true", help="Overwrite an existing query file")
+    p.set_defaults(func=cmd_queries)
+
+    p = sub.add_parser("discover", help="Find companies for a market from every source and classify them")
+    p.add_argument("--market", required=True)
+    p.add_argument("--no-seeds", action="store_true", help="Blind run without the seed list -> data/discovery/<market>.blind.json")
+    p.add_argument("--sources", help=f"Comma-separated subset of: {', '.join(dc.SOURCES)} (default: all)")
+    p.add_argument("--rounds", type=int, default=dc.ROUNDS,
+                   help="Most rounds in this run (0: only classify what the last run left unclassified)")
+    p.add_argument("--max-cost", type=float, default=dc.MAX_COST, help="Stop starting new work at this estimated spend (USD)")
+    p.add_argument("--reclassify", action="store_true", help="Ignore stored verdicts and classify again")
+    p.add_argument("--recheck", action="store_true",
+                   help="Classify in-market companies again under the current prompts (after a prompt change); with --rounds 0, nothing else")
+    p.set_defaults(func=cmd_discover)
+
+    p = sub.add_parser("report", help="Rewrite discovery reports and leads sheets from data/discovery/ (no searching)")
+    p.add_argument("--market", required=True, nargs="+")
+    p.add_argument("--no-seeds", action="store_true", help="The blind run's report")
+    p.set_defaults(func=cmd_report)
+
+    p = sub.add_parser("probe", help="Fresh-eyes completeness check: new searches, share already on the list")
+    p.add_argument("--market", required=True)
+    p.add_argument("--max-cost", type=float, default=5.0)
+    p.add_argument("--seed", type=int, help="Random seed for the states searched (default: random)")
+    p.set_defaults(func=cmd_probe)
 
     p = sub.add_parser("schema", help="Regenerate markets/schema.json and validate every brief")
     p.set_defaults(func=cmd_schema)
