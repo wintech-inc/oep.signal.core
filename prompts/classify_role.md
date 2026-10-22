@@ -1,21 +1,22 @@
-You classify companies for a B2B market map. One company, already known to participate in a market, is described below. Decide from the evidence whether it is a possible customer, a possible competitor, both, or neither for the supplier.
+You classify companies for a B2B market map. One company, already known to participate in a market, is described below. From the evidence, decide which of five activities it does in the {end_product.name} market, and write a short comment about it for a salesperson.
 
-# The rule
+# The activities
 
-{supplier} makes {our_products.summary}. These are components that other companies build into {end_product.name}s. This company is already known to participate in the {end_product.name} market. Decide its role from {supplier}'s point of view.
+{supplier} makes {our_products.summary}. These are components that other companies build into {end_product.name}s. This company is already known to participate in the {end_product.name} market.
 
-**Customer: yes** if it does either of the following:
+Answer each activity yes or no, on its own. A company can do several.
 
-- it builds or manufactures {end_product.name}s, including contractors that build them on site;
-- it resells components, equipment, or building materials for {end_product.name}s to the companies that build, equip, or maintain them.
+1. `makes_end_product`: it builds or manufactures {end_product.name}s, including contractors that build them on site.
+2. `makes_component`: it makes {our_products.category} for {end_product.name}s and sells them to other companies.
+3. `resells_component`: it resells {our_products.category} for {end_product.name}s that other companies make. A dealer, distributor, or store that stocks another maker's {our_products.category} for {end_product.name}s does this.
+4. `resells_supplies`: it resells other parts, equipment, or building materials for {end_product.name}s, made by other companies, to the companies that build, equip, or maintain them.
+5. `resells_end_product`: it resells finished {end_product.name}s that other companies make.
 
-**Competitor: yes** if it makes or sells {our_products.category} for {end_product.name}s, whether its own or another maker's.
+Resell means selling products that other companies make. A company that sells only what it makes itself does not resell.
 
-A company can be both. A distributor, dealer, or store that resells another maker's {our_products.category} for {end_product.name}s is both: it sells products like ours, and it resells components, so it could carry ours too. A company can also be neither, for example if it only resells finished {end_product.name}s or the evidence doesn't show either activity.
+A builder that makes its own {our_products.category} only for its own {end_product.name}s, including replacement parts for them, does not make them for others: `makes_component` is no. If it also sells them on their own to other companies, `makes_component` is yes.
 
-A builder that makes its own {our_products.category} only for its own {end_product.name}s, including replacement parts for them, is a customer, not a competitor.
-
-When the evidence suggests the company is a customer but doesn't prove it, answer yes. Answer competitor yes only when the evidence shows it makes or sells {our_products.category}.
+When the evidence suggests the company builds {end_product.name}s, or resells parts, equipment, or materials for them, but doesn't prove it, answer yes. Answer `makes_component` or `resells_component` yes only when the evidence shows {our_products.category}.
 
 # The end product: {end_product.name}
 
@@ -31,14 +32,14 @@ When the evidence suggests the company is a customer but doesn't prove it, answe
 
 # Known companies and their roles
 
+The role is the first of these that applies: Manufacturer (makes the end product), Component Manufacturer (makes {our_products.category} for it), Component Reseller (resells {our_products.category} for it), Supply Reseller (resells other parts or supplies for it), Reseller (resells the finished end product), Adjacent (none of these).
+
 {examples}
 
 # How to answer
 
-- `reason`: one or two sentences on what the company does that makes it a customer, a competitor, both, or neither.
-- `customer`: true or false.
-- `customer_evidence_url`: when `customer` is true, the URL from the evidence that best shows it builds {end_product.name}s or resells components for them; otherwise null.
-- `competitor`: true or false.
-- `competitor_evidence_url`: when `competitor` is true, the URL from the evidence that best shows it makes or sells {our_products.category}; otherwise null.
+- `name`: the company's proper name as its own pages or listings give it, for example "Reliable Poultry Supply", not "Reliable Poultry Supply's post" or "reliablepoultry.com". If the evidence doesn't show it, clean up the name given.
+- For each activity, `yes` (true or false) and `evidence_url`: when yes, the URL from the evidence that best shows it; when no, null. Use only URLs that appear in the evidence.
+- `comment`: one or two plain sentences for a salesperson: what the company does in the {end_product.name} market, and its other activities there if it has several (for example "Also makes and sells its own tunnel doors."). Write plain words: no rule letters, field names, or talk of evidence.
 
-Give a URL for every true answer, and use only URLs that appear in the evidence. Judge the company itself, not the other companies that appear in its search results.
+Judge the company itself, not the other companies that appear in its search results.

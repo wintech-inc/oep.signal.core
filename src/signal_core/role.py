@@ -1,9 +1,11 @@
-"""Role classification (stage 2): for a company already in a market, is it a possible customer,
-a possible competitor, both, or neither? One Claude Haiku call per company and market, over the
-stage-1 evidence (cached) plus one search for products like ours.
+"""Role classification (stage 2, M4): for a company already in a market, which of five activities does it do
+there, and so which role does it have? One Claude Haiku call per company and market, over the stage-1
+evidence (cached) plus one search for products like ours. The role follows from the activities in code,
+by the fixed precedence in markets.ROLES.
 """
 
 import asyncio
+import hashlib
 import sys
 from functools import cache
 
@@ -16,22 +18,42 @@ from signal_core.companies import Company
 from signal_core.markets import ROOT, Market, load_market
 
 PROMPT_PATH = ROOT / "prompts" / "classify_role.md"
-ROLE_FIELDS = ["role", "role_reason", "customer", "customer_evidence_url",
-               "competitor", "competitor_evidence_url", "weak_evidence"]
+# Each activity and the role it gives, in precedence order. A company with none of them is Adjacent.
+ACTIVITIES = {
+    "makes_end_product": "Manufacturer",
+    "makes_component": "Component Manufacturer",
+    "resells_component": "Component Reseller",
+    "resells_supplies": "Supply Reseller",
+    "resells_end_product": "Reseller",
+}
+ROLE_FIELDS = ["role", "company_name", "comment",
+               *[f for a in ACTIVITIES for f in (a, f"{a}_url")], "weak_evidence", "role_version"]
+
+
+class Activity(BaseModel):
+    yes: bool
+    evidence_url: str | None
 
 
 class RoleAnswer(BaseModel):
-    reason: str
-    customer: bool
-    customer_evidence_url: str | None
-    competitor: bool
-    competitor_evidence_url: str | None
+    name: str
+    makes_end_product: Activity
+    makes_component: Activity
+    resells_component: Activity
+    resells_supplies: Activity
+    resells_end_product: Activity
+    comment: str
 
 
-def derive_role(customer: bool, competitor: bool) -> str:
-    if customer and competitor:
-        return "both"
-    return "customer" if customer else "competitor" if competitor else "neither"
+def derive_role(flags: dict) -> str:
+    """The first role whose activity is yes, in precedence order; Adjacent if none."""
+    return next((role for activity, role in ACTIVITIES.items() if flags.get(activity)), "Adjacent")
+
+
+def role_url(result: dict) -> str | None:
+    """The evidence URL of the activity that gave the company its role (stage 1's for Adjacent)."""
+    activity = next((a for a, role in ACTIVITIES.items() if role == result.get("role")), None)
+    return result.get(f"{activity}_url") if activity else result.get("evidence_url")
 
 
 @cache
@@ -45,6 +67,11 @@ def role_prompt(market_id: str) -> str:
         role_notes=_bullets(market.role_notes),
         examples=_bullets([f"{e.name} ({e.url}): {e.role}" for e in market.examples_in if e.role]),
     )
+
+
+def role_version(market_id: str) -> str:
+    """Short hash of the stage-2 prompt as rendered for a market: a stored role from another version is stale."""
+    return hashlib.sha1(role_prompt(market_id).encode()).hexdigest()[:12]
 
 
 def role_evidence_text(company: Company, evidence: dict, products: dict) -> str:
@@ -88,21 +115,19 @@ class RoleClassifier(Classifier):
             if response.parsed_output is None:
                 raise RuntimeError(f"no answer (stop_reason={response.stop_reason})")
             answer = response.parsed_output
-            if not answer.customer:
-                answer.customer_evidence_url = None
-            if not answer.competitor:
-                answer.competitor_evidence_url = None
             # A yes whose URL isn't in the evidence is a weak answer: kept, but flagged for the eval.
             urls = evidence_urls(evidence, products)
-            weak = [k for k in ("customer", "competitor")
-                    if getattr(answer, k) and _norm(getattr(answer, f"{k}_evidence_url")) not in urls]
-            return {**result, "role": derive_role(answer.customer, answer.competitor), "role_reason": answer.reason,
-                    "customer": answer.customer, "customer_evidence_url": answer.customer_evidence_url,
-                    "competitor": answer.competitor, "competitor_evidence_url": answer.competitor_evidence_url,
-                    "weak_evidence": ", ".join(weak),
+            fields = {}
+            for activity in ACTIVITIES:
+                a = getattr(answer, activity)
+                fields |= {activity: a.yes, f"{activity}_url": a.evidence_url if a.yes else None}
+            weak = [a for a in ACTIVITIES if fields[a] and _norm(fields[f"{a}_url"]) not in urls]
+            return {**result, "role": derive_role(fields), "company_name": answer.name.strip() or company.name,
+                    "comment": answer.comment, **fields, "weak_evidence": ", ".join(weak),
+                    "role_version": role_version(market.id),
                     "role_input_tokens": response.usage.input_tokens, "role_output_tokens": response.usage.output_tokens}
         except (anthropic.APIError, httpx.HTTPError, RuntimeError, OSError) as e:
-            return {**result, "role": "error", "role_reason": f"{type(e).__name__}: {e}"[:300]}
+            return {**result, "role": "error", "comment": f"{type(e).__name__}: {e}"[:300]}
 
     async def two_stage(self, company: Company, market: Market) -> dict:
         """Stage 1; if the company is in, stage 2. Role fields are empty for companies not in."""

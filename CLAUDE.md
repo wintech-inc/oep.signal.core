@@ -28,7 +28,7 @@ uv run signal review --market <market_id>   # sample + screen -> eval/review_<ma
 uv run signal freeze --market <market_id>   # reviewed sheet -> data/reference_labels.json
 uv run signal eval --market <market_id>     # accuracy against the reference set
 uv run signal schema                        # after editing the Market model in src/signal_core/markets.py
-uv run signal role <url> --market <market_id>         # both stages: market, then customer/competitor role
+uv run signal role <url> --market <market_id>         # both stages: market, then role (Manufacturer, Component Manufacturer, ...)
 uv run signal review --roles --market <market_id>     # role reference set -> eval/review_roles_<market_id>.csv
 uv run signal freeze --roles --market <market_id>     # -> data/reference_roles.json
 uv run signal eval --roles --market <market_id>       # stage-2 accuracy against the role reference set
@@ -38,11 +38,13 @@ uv run signal discover --market <market_id> --no-seeds   # blind run: must re-fi
 uv run signal probe --market <market_id>              # fresh-eyes completeness check -> eval/probe_<market_id>.md
 uv run signal report --market <market_id>             # rewrite discovery report + leads sheet from stored state, no new searches
 uv run signal review|freeze|eval --discovered --market <market_id>   # spot check of M1 on discovered companies
+uv run signal export --market <market_id>             # CRM import file -> exports/crm_<market_id>.csv (+ eval/leads_*, eval/export_*)
+uv run signal eval --contacts --market <market_id>    # contact spot check from the filled eval/review_contacts_<market_id>.csv
 ```
 
 Discovery (`discover.py`, `prompts/discovery_queries.md`, `more_companies.md`, `read_list.md`, `resolve_lead.md`) calls both classifier stages unchanged. Every lead list comes from a `signal` command: no ad hoc scripts that search, extract, filter, or edit leads. Never restrict or drop a discovery source without Tim.
 
-Stage 1 (M1, `prompts/screen_market.md`) must not change when working on stage 2 (`prompts/classify_role.md`, `role.py`).
+Stage 1 (M1, `prompts/screen_market.md`) must not change when working on stage 2 (`prompts/classify_role.md`, `role.py`). Role names and their precedence (`markets.ROLES`) are the same for every market.
 
 Company websites, Serper, and the Anthropic API must be reachable, and keys must be in `.env`. Cloud sessions without that network access can run the unit tests only; run the commands on Tim's machine.
 

@@ -1,6 +1,7 @@
 """Evidence for the classifiers: the company's homepage text and one Serper site search (stage 1),
 plus one Serper search for products like ours (stage 2). Discovery (M3) adds paged web search,
-Serper places (map) search, and page text with its links for the list reader.
+Serper places (map) search, and page text with its links for the list reader. The CRM export (M4)
+takes address and phone from the places search.
 
 Every fetch and search result is cached in .cache/ so re-runs only pay for LLM calls.
 Delete .cache/ (or a subfolder) to refetch.
@@ -214,13 +215,16 @@ class Fetcher:
         return cache_put("web", key, {"query": query, "page": page, "results": results})
 
     async def places(self, query: str, page: int = 1) -> dict:
-        """One page of a Serper places (map) search: name, address, website, category of each place."""
+        """One page of a Serper places (map) search: name, full address, website, category, phone number, and
+        Google Maps id of each place."""
         key = f"{page}|{query}"
-        if cached := cache_get("places", key):
+        # Pages cached before M4 have no phone numbers: those are searched again.
+        if (cached := cache_get("places", key)) and all("phone" in p for p in cached["results"]):
             return cached
         data = await self._serper("places", {"q": query, "page": page, "gl": "us"})
         results = [{"title": o.get("title", ""), "address": o.get("address", ""), "website": o.get("website") or None,
-                    "category": o.get("category", "")} for o in data.get("places", [])]
+                    "category": o.get("category", ""), "phone": o.get("phoneNumber") or None, "cid": o.get("cid")}
+                   for o in data.get("places", [])]
         return cache_put("places", key, {"query": query, "page": page, "results": results})
 
     async def list_page(self, url: str) -> dict:

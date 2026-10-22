@@ -1,4 +1,4 @@
-"""Reference sets and evaluation (M1 plan section 7, M2 plan section 6).
+"""Reference sets and evaluation (M1 plan section 7, M4 plan section 7 for roles).
 
 review: draw a fixed sample per market, screen it, and write a review sheet.
 freeze: store the reviewed labels in data/reference_labels.json (roles: data/reference_roles.json).
@@ -13,8 +13,8 @@ from pathlib import Path
 
 from signal_core.classify import MODEL, cost_per_1000
 from signal_core.companies import Company, clean_url, company_key
-from signal_core.markets import ROOT, Market
-from signal_core.role import role_cost_per_1000
+from signal_core.markets import LEAD_ROLES, ROLES, ROOT, Market
+from signal_core.role import ACTIVITIES, role_cost_per_1000, role_url
 
 REFERENCE_PATH = ROOT / "data" / "reference_labels.json"
 EVAL_DIR = ROOT / "eval"
@@ -25,13 +25,12 @@ SHEET_COLUMNS = ["company_id", "name", "url", "crm_hint", "verdict", "rule", "re
 TARGETS = {"recall": 0.95, "precision": 0.90, "unknown_rate": 0.05, "cost_per_1000": 2.00}
 
 ROLE_REFERENCE_PATH = ROOT / "data" / "reference_roles.json"
-ROLES = ("customer", "competitor", "both", "neither")
 ROLE_LABELS = (*ROLES, "skip")
-ROLE_EXTRA = 25
-ROLE_SHEET_COLUMNS = ["company_id", "name", "url", "source", "verdict", "reason", "role", "role_reason",
-                      "customer_evidence_url", "competitor_evidence_url", "weak_evidence", "label", "note"]
-ROLE_TARGETS = {"customer_recall": 0.95, "customer_precision": 0.90,
-                "competitor_recall": 0.85, "competitor_precision": 0.85, "cost_per_1000": 2.00}
+ROLE_EXTRA = 10
+ROLE_SHEET_COLUMNS = ["company_id", "name", "url", "source", "previous_label", "role", "comment",
+                      *[f for a in ACTIVITIES for f in (a, f"{a}_url")], "weak_evidence", "label", "note"]
+ROLE_TARGETS = {"lead_recall": 0.95, "lead_precision": 0.90, "accuracy": 0.85, "cost_per_1000": 2.00}
+CONTACT_TARGET = 0.90   # share of filled address and phone fields right in the spot check
 
 
 def crm_hint(company: Company) -> str:
@@ -71,14 +70,17 @@ def load_labels(reference_path: Path = REFERENCE_PATH) -> list[dict]:
 
 
 def freeze(market_id: str, path: Path, allowed: tuple = LABELS, reference_path: Path = REFERENCE_PATH) -> int:
-    """Read a reviewed sheet into the reference file, replacing that market's labels."""
+    """Read a reviewed sheet into the reference file, replacing that market's labels. Labels match the allowed
+    values in any letter case."""
     with open(path, newline="", encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
-    missing = [r["name"] for r in rows if r["label"].strip().lower() not in allowed]
+    canonical = {a.lower(): a for a in allowed}
+    missing = [r["name"] for r in rows if r["label"].strip().lower() not in canonical]
     if missing:
         raise SystemExit(f"{len(missing)} rows have no label (use {', '.join(allowed)}): {', '.join(missing[:10])}")
     new = [
-        {"company_id": r["company_id"], "market_id": market_id, "label": r["label"].strip().lower(), "note": r["note"].strip()}
+        {"company_id": r["company_id"], "market_id": market_id, "label": canonical[r["label"].strip().lower()],
+         "note": r["note"].strip()}
         for r in rows
         if r["label"].strip().lower() != "skip"
     ]
@@ -160,15 +162,18 @@ def role_sheet_path(market_id: str) -> Path:
     return EVAL_DIR / f"review_roles_{market_id}.csv"
 
 
-def role_extras(results: list[dict], market: Market, exclude: set[str], n: int = ROLE_EXTRA, seed: int = SEED) -> list[dict]:
-    """Up to n screened companies that stage 2 calls competitor or both, outside the reference set and examples.
-
-    The CRM list is mostly customers and leads; these add competitors to test competitor precision.
-    """
+def role_extras(candidates: list[dict], market: Market, exclude: set[str], have: Counter,
+                n: int = ROLE_EXTRA, seed: int = SEED) -> list[dict]:
+    """Discovered in-market companies to test each role's precision: for every role the reference set has fewer
+    than n of (by stage 2's answer), companies stage 2 gives that role, up to n in all. Never the brief's examples."""
     examples = {company_key(clean_url(e.url) or e.url) for e in market.examples_in}
-    pool = sorted((r for r in results if r.get("role") in ("competitor", "both")
-                   and r["company_id"] not in exclude | examples), key=lambda r: r["company_id"])
-    return random.Random(seed).sample(pool, min(n, len(pool)))
+    rng = random.Random(seed)
+    rows = []
+    for role in ROLES:
+        pool = sorted((c for c in candidates if c.get("role") == role and c["company_id"] not in exclude | examples),
+                      key=lambda c: c["company_id"])
+        rows += rng.sample(pool, min(max(n - have[role], 0), len(pool)))
+    return rows
 
 
 def write_role_sheet(path: Path, rows: list[dict]) -> None:
@@ -181,21 +186,16 @@ def write_role_sheet(path: Path, rows: list[dict]) -> None:
 
 
 def role_metrics(results: list[dict], labels: dict[str, str]) -> dict:
-    """Customer and competitor recall and precision ('both' counts as yes for each), exact accuracy, confusion."""
+    """Lead recall and precision (any lead role counts as a lead), exact role accuracy, and the confusion matrix."""
     ran = [r for r in results if r["role"] != "error"]
     pairs = [(labels[r["company_id"]], r["role"]) for r in ran]
-
-    def recall_precision(yes: tuple) -> tuple:
-        tp = sum(1 for l, p in pairs if l in yes and p in yes)
-        fn = sum(1 for l, p in pairs if l in yes and p not in yes)
-        fp = sum(1 for l, p in pairs if l not in yes and p in yes)
-        return (tp / (tp + fn) if tp + fn else None, tp / (tp + fp) if tp + fp else None)
-
-    customer, competitor = recall_precision(("customer", "both")), recall_precision(("competitor", "both"))
+    tp = sum(1 for l, p in pairs if l in LEAD_ROLES and p in LEAD_ROLES)
+    fn = sum(1 for l, p in pairs if l in LEAD_ROLES and p not in LEAD_ROLES)
+    fp = sum(1 for l, p in pairs if l not in LEAD_ROLES and p in LEAD_ROLES)
     return {
         "n": len(results),
-        "customer_recall": customer[0], "customer_precision": customer[1],
-        "competitor_recall": competitor[0], "competitor_precision": competitor[1],
+        "lead_recall": tp / (tp + fn) if tp + fn else None,
+        "lead_precision": tp / (tp + fp) if tp + fp else None,
         "accuracy": sum(1 for l, p in pairs if l == p) / len(pairs) if pairs else None,
         "errors": len(results) - len(ran),
         "weak": [r for r in ran if r.get("weak_evidence")],
@@ -218,26 +218,29 @@ def role_report(market: Market, results: list[dict], labels: dict[str, dict]) ->
         return f"| {name} | {pct(x)} | ≥ {target:.0%} | {status} |"
 
     counts = Counter(v["label"] for v in labels.values())
+    short = {r: "".join(w[0] for w in r.split()) for r in ROLES}   # column heads: M, CM, CR, SR, R, A
     lines = [
         f"# Role eval: {market.name} (`{market.id}`)",
         "",
         f"Reference set: {m['n']} companies in the market, roles reviewed by Tim "
-        f"({', '.join(f'{counts[r]} {r}' for r in ROLES)}). Model: `{MODEL}`.",
+        f"({', '.join(f'{counts[r]} {r}' for r in ROLES)}). Model: `{MODEL}`. "
+        f"Lead roles: {', '.join(LEAD_ROLES)}.",
         "",
         "| Measure | Result | Target | |",
         "|---|---|---|---|",
-        row("customer_recall", "Customer recall"),
-        row("customer_precision", "Customer precision"),
-        row("competitor_recall", "Competitor recall"),
-        row("competitor_precision", "Competitor precision"),
+        row("lead_recall", "Lead recall"),
+        row("lead_precision", "Lead precision"),
+        row("accuracy", "Exact role accuracy"),
         row("cost_per_1000", "Cost per 1,000"),
         "",
-        f"Exact role accuracy: {pct(m['accuracy'])}. Errors (API or search failures): {m['errors']}. "
+        f"Errors (API or search failures): {m['errors']}. "
         f"Yes answers without an evidence URL from the evidence: {len(m['weak'])}.",
         "",
         "## Confusion matrix (rows: reference label, columns: role)",
         "",
-        "| | " + " | ".join(ROLES) + " |",
+        " ".join(f"{short[r]} = {r}." for r in ROLES),
+        "",
+        "| | " + " | ".join(short[r] for r in ROLES) + " |",
         "|---|" + "---|" * len(ROLES),
         *[f"| **{l}** | " + " | ".join(str(m["confusion"][(l, p)]) for p in ROLES) + " |" for l in ROLES],
         "",
@@ -246,18 +249,41 @@ def role_report(market: Market, results: list[dict], labels: dict[str, dict]) ->
     ]
 
     def detail(r):
-        urls = [f"{k}: {r[f'{k}_evidence_url']}" for k in ("customer", "competitor") if r.get(f"{k}_evidence_url")]
-        return f"  - {r['role_reason']}" + (f" Evidence: {'; '.join(urls)}" if urls else "")
+        yes = [a.replace("_", " ") for a in ACTIVITIES if r.get(a)]
+        url = role_url(r)
+        return (f"  - {r['comment']} Activities: {', '.join(yes) or 'none'}." + (f" Evidence: {url}" if url else ""))
 
     wrong = [r for r in results if r["role"] != labels[r["company_id"]]["label"]]
-    for r in sorted(wrong, key=lambda r: (labels[r["company_id"]]["label"], r["name"])):
+    order = {r: i for i, r in enumerate(ROLES)}
+    for r in sorted(wrong, key=lambda r: (order.get(labels[r["company_id"]]["label"], len(order)), r["name"])):
         note = labels[r["company_id"]]["note"]
-        lines += [f"- **{r['name']}** ({r['url']}): label `{labels[r['company_id']]['label']}`, role `{r['role']}`."
-                  + (f" Reviewer note: {note}" if note else ""), detail(r)]
+        lines += [f"- **{r.get('company_name') or r['name']}** ({r['url']}): label `{labels[r['company_id']]['label']}`, "
+                  f"role `{r['role']}`." + (f" Reviewer note: {note}" if note else ""), detail(r)]
     if not wrong:
         lines.append("None.")
     lines += ["", "## Yes answers without an evidence URL from the evidence", ""]
     lines += [f"- **{r['name']}** ({r['url']}): {r['weak_evidence']}." for r in m["weak"]] or ["None."]
+    return "\n".join(lines) + "\n"
+
+
+def contact_report(market: Market, path: Path) -> str:
+    """The contact spot check: of the filled address and phone fields Tim checked, the share that is right."""
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        rows = list(csv.DictReader(f))
+    lines = [f"# Contact spot check: {market.name} (`{market.id}`)", "",
+             f"{len(rows)} exported rows checked against their map listing and website.", "",
+             "| Field | Right | Checked | Share | Target |", "|---|---|---|---|---|"]
+    for field, filled in (("address", ("Street address", "City")), ("phone", ("Phone",))):
+        checked = [r for r in rows if any(r[c] for c in filled) and r[f"{field}_right"].strip().lower() in ("yes", "no")]
+        right = sum(1 for r in checked if r[f"{field}_right"].strip().lower() == "yes")
+        share = right / len(checked) if checked else None
+        status = "n/a" if share is None else "met" if share >= CONTACT_TARGET else "**missed**"
+        lines.append(f"| {field} | {right} | {len(checked)} | {'n/a' if share is None else f'{share:.0%}'} | "
+                     f"≥ {CONTACT_TARGET:.0%}: {status} |")
+    wrong = [r for r in rows if "no" in (r["address_right"].strip().lower(), r["phone_right"].strip().lower())]
+    lines += ["", "## Wrong", ""]
+    lines += [f"- **{r['Company']}** ({r['Homepage']}): {r['note'] or 'no note'}. Listing: {r['maps_url'] or 'none'}"
+              for r in wrong] or ["None."]
     return "\n".join(lines) + "\n"
 
 
