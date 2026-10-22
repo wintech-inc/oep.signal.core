@@ -9,10 +9,10 @@ Answer each activity yes or no, on its own. A company can do several.
 1. `makes_end_product`: it builds or manufactures {end_product.name}s, including contractors that build them on site.
 2. `makes_component`: it makes {our_products.category} for {end_product.name}s and sells them to other companies.
 3. `resells_component`: it resells {our_products.category} for {end_product.name}s that other companies make. A dealer, distributor, or store that stocks another maker's {our_products.category} for {end_product.name}s does this.
-4. `resells_supplies`: it resells other parts, equipment, or building materials for {end_product.name}s, made by other companies, to the companies that build, equip, or maintain them.
-5. `resells_end_product`: it resells finished {end_product.name}s that other companies make.
+4. `resells_end_product`: it resells finished {end_product.name}s that other companies make.
+5. `resells_supplies`: it resells other parts, equipment, or building materials for {end_product.name}s, made by other companies, to the companies that build, equip, or maintain them.
 
-Resell means selling products that other companies make. A company that sells only what it makes itself does not resell.
+Resell means selling products that other companies make. A company that sells only what it makes itself does not resell. A dealer or store that sells another company's branded {end_product.name}s resells them and does not make them, even when its listing says it "builds and sells" them or it delivers and sets them up.
 
 A builder that makes its own {our_products.category} only for its own {end_product.name}s, including replacement parts for them, does not make them for others: `makes_component` is no. If it also sells them on their own to other companies, `makes_component` is yes.
 
@@ -32,13 +32,15 @@ When the evidence suggests the company builds {end_product.name}s, or resells pa
 
 # Known companies and their roles
 
-The role is the first of these that applies: Manufacturer (makes the end product), Component Manufacturer (makes {our_products.category} for it), Component Reseller (resells {our_products.category} for it), Supply Reseller (resells other parts or supplies for it), Reseller (resells the finished end product), Adjacent (none of these).
+The role is the first of these that applies: Manufacturer (makes the end product), Component Manufacturer (makes {our_products.category} for it), Component Reseller (resells {our_products.category} for it), Reseller (resells the finished end product), Supply Reseller (resells other parts or supplies for it), Adjacent (none of these).
 
 {examples}
 
 # How to answer
 
-- `name`: the company's proper name as its own pages or listings give it, for example "Reliable Poultry Supply", not "Reliable Poultry Supply's post" or "reliablepoultry.com". If the evidence doesn't show it, clean up the name given.
+- `name`: the company's proper name as its own pages or listings give it, for example "Reliable Poultry Supply", not "Reliable Poultry Supply's post" or "reliablepoultry.com". If the evidence doesn't show which company this is (for example a post or article title that names no company), null.
+- `website`: the company's own website (its homepage URL) as the evidence shows it, else null. Not a social media page, directory, marketplace, news site, or another company's site.
+- `city`, `state`, `country`: where the company is based (its main office), as the evidence shows it, else null. For a US company, `state` is the two-letter code and `country` is "US".
 - For each activity, `yes` (true or false) and `evidence_url`: when yes, the URL from the evidence that best shows it; when no, null. Use only URLs that appear in the evidence.
 - `comment`: one or two plain sentences for a salesperson: what the company does in the {end_product.name} market, and its other activities there if it has several (for example "Also makes and sells its own tunnel doors."). Write plain words: no rule letters, field names, or talk of evidence.
 

@@ -32,7 +32,7 @@ uv run pytest
 
 ## Usage (stage 2: role in the market, M4)
 
-For companies the market screen marks `in`, a second stage answers five yes/no questions with an evidence URL for each yes (makes the end product, makes components like ours for it, resells others' components, resells other supplies, resells the finished end product). The company's role is the first that applies, in this order: Manufacturer, Component Manufacturer, Component Reseller, Supply Reseller, Reseller, else Adjacent. Lead roles are Manufacturer, Component Reseller, and Supply Reseller. Stage 2 also gives the company's proper name and a short comment for sales. `signal classify` stays stage 1 only.
+For companies the market screen marks `in`, a second stage answers five yes/no questions with an evidence URL for each yes (makes the end product, makes components like ours for it, resells others' components, resells other supplies, resells the finished end product). The company's role is the first that applies, in this order: Manufacturer, Component Manufacturer, Component Reseller, Reseller, Supply Reseller, else Adjacent. Lead roles are Manufacturer, Component Reseller, and Supply Reseller. Stage 2 also gives the company's proper name, its own website, where it is based, and a short comment for sales. `signal classify` stays stage 1 only.
 
 ```
 uv run signal role https://www.hogslat.com --market pac_poultry_houses   # both stages, one company
@@ -65,14 +65,14 @@ uv run signal eval --discovered --market pac_hunting_blinds   # spot-check preci
 
 ## Usage (M4: CRM export)
 
-`signal export` turns a market's discovery run into the CRM import file. It gives every in-market company a role from the current stage-2 prompt, looks up its primary address and main phone with one Google Maps search (Serper places), drops companies whose listing is outside the market's geography, and merges duplicates (the same phone number or homepage, typically a Facebook page and a website).
+`signal export` turns a market's discovery run into the CRM import file. It gives every in-market company a role from the current stage-2 prompt, looks up its primary address and main phone with one Google Maps search (Serper places) in the town stage 2 gives, and, where the listing has no phone or street address, reads them from the company's own homepage and contact page (a social-only company: one web search) with one small LLM call. It drops companies that stage 2, the listing, or the website place outside the market's geography (another country, a non-US phone code), and merges duplicates (the same homepage, phone number, or name, or a social page whose handle is a row's domain). The Homepage is the company's own website as stage 2 found it in the evidence, else a site named after the company, else its social page.
 
 ```
 uv run signal export --market pac_poultry_houses pac_hunting_blinds   # -> exports/crm_<market>.csv, eval/leads_<market>.csv, eval/export_<market>.md
 uv run signal eval --contacts --market pac_poultry_houses             # after filling eval/review_contacts_<market>.csv -> eval/results_contacts_<market>.md
 ```
 
-The CRM file's columns are Company, Homepage, Target, Division, Role, Street address, City, State, ZIP, Phone, Comments, Lead Source, and CRM Status (the company's role in the CRM list it came from, such as Lead or Customer; blank for companies SIGNAL found that aren't on it). Target and Division come from the brief (`crm_target`, `crm_market`). A field with no matching map listing stays blank. `eval/leads_<market>.csv` is the internal sheet with every activity, evidence URL, and source. Roles and map lookups are cached, so exporting again costs nothing unless the stage-2 prompt or brief changed.
+The CRM file's columns are Company, Homepage, Target, Division, Role, Street address, City, State, ZIP, Phone, Comments, Lead Source, and CRM Status (the company's role in the CRM list it came from, such as Lead or Customer; blank for companies SIGNAL found that aren't on it). Target and Division come from the brief (`crm_target`, `crm_market`). A field that neither the map listing nor the company's own pages show stays blank. `eval/leads_<market>.csv` is the internal sheet with every activity, evidence URL, and source. Roles and map lookups are cached, so exporting again costs nothing unless the stage-2 prompt or brief changed.
 
 Fetched pages and search results are cached in `.cache/` (git-ignored), so re-running after a brief or prompt change only costs the LLM calls. Delete `.cache/` to refetch.
 

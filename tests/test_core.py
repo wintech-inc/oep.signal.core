@@ -9,7 +9,7 @@ from collections import Counter
 
 from signal_core.eval import ROLE_LABELS, freeze, load_labels, metrics, role_extras, role_metrics, sample
 from signal_core.evidence import MAX_QUERY_WORDS, page_text, product_search_query, search_query
-from signal_core.role import ACTIVITIES, derive_role, role_prompt
+from signal_core.role import ACTIVITIES, RoleAnswer, derive_role, own_website, place, role_prompt
 
 
 @pytest.mark.parametrize("raw, expected", [
@@ -78,10 +78,29 @@ def test_product_search_query():
 def test_derive_role_by_precedence():
     assert tuple(ACTIVITIES.values()) + ("Adjacent",) == markets.ROLES
     assert derive_role({a: True for a in ACTIVITIES}) == "Manufacturer"
-    assert derive_role({"resells_end_product": True, "resells_supplies": True}) == "Supply Reseller"
+    assert derive_role({"resells_end_product": True, "resells_supplies": True}) == "Reseller"
+    assert derive_role({"resells_supplies": True}) == "Supply Reseller"
     assert derive_role({"resells_end_product": True, "resells_component": True}) == "Component Reseller"
     assert derive_role({"resells_end_product": True}) == "Reseller"
     assert derive_role({a: False for a in ACTIVITIES}) == "Adjacent"
+
+
+def test_own_website_must_be_in_the_evidence():
+    urls = {"acmeblinds.com/about", "facebook.com/acme"}
+    assert own_website("https://www.acmeblinds.com/contact", "", urls) == "https://www.acmeblinds.com"
+    assert own_website("acmeblinds.net", "Visit ACMEBLINDS.NET today", set()) == "https://acmeblinds.net"
+    assert own_website("https://made-up.com", "", urls) == ""
+    assert own_website("https://facebook.com/acme", "", urls) == ""
+    assert own_website(None, "", urls) == ""
+
+
+def test_place():
+    blank = dict.fromkeys(["name", "website", "comment"] + list(ACTIVITIES))
+    def answer(**kw):
+        return RoleAnswer.model_construct(**{**blank, "city": None, "state": None, "country": None, **kw})
+    assert place(answer(city="Cullman", state="AL", country="US")) == ("Cullman, AL", "US")
+    assert place(answer(state="Ontario", country="Canada")) == ("Ontario", "Canada")
+    assert place(answer()) == ("", "")
 
 
 def test_page_text():

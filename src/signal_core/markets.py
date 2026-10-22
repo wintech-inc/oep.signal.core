@@ -15,7 +15,7 @@ MARKETS_DIR = ROOT / "markets"
 SCHEMA_PATH = MARKETS_DIR / "schema.json"
 # A company's role in a market (M4), in precedence order: a company doing several of these gets the first.
 # The same in every market, so the CRM can filter on them across divisions.
-ROLES = ("Manufacturer", "Component Manufacturer", "Component Reseller", "Supply Reseller", "Reseller", "Adjacent")
+ROLES = ("Manufacturer", "Component Manufacturer", "Component Reseller", "Reseller", "Supply Reseller", "Adjacent")
 LEAD_ROLES = ("Manufacturer", "Component Reseller", "Supply Reseller")
 
 

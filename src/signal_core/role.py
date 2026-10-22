@@ -8,13 +8,14 @@ import asyncio
 import hashlib
 import sys
 from functools import cache
+from urllib.parse import urlsplit
 
 import anthropic
 import httpx
 from pydantic import BaseModel
 
 from signal_core.classify import EFFORT, MODEL, PRICE_IN, PRICE_OUT, PRICE_SEARCH, Classifier, _bullets, evidence_text
-from signal_core.companies import Company
+from signal_core.companies import Company, bare_host, clean_url, is_social
 from signal_core.markets import ROOT, Market, load_market
 
 PROMPT_PATH = ROOT / "prompts" / "classify_role.md"
@@ -23,10 +24,10 @@ ACTIVITIES = {
     "makes_end_product": "Manufacturer",
     "makes_component": "Component Manufacturer",
     "resells_component": "Component Reseller",
-    "resells_supplies": "Supply Reseller",
     "resells_end_product": "Reseller",
+    "resells_supplies": "Supply Reseller",
 }
-ROLE_FIELDS = ["role", "company_name", "comment",
+ROLE_FIELDS = ["role", "company_name", "own_website", "based_in", "based_country", "comment",
                *[f for a in ACTIVITIES for f in (a, f"{a}_url")], "weak_evidence", "role_version"]
 
 
@@ -36,12 +37,16 @@ class Activity(BaseModel):
 
 
 class RoleAnswer(BaseModel):
-    name: str
+    name: str | None
+    website: str | None
+    city: str | None
+    state: str | None
+    country: str | None
     makes_end_product: Activity
     makes_component: Activity
     resells_component: Activity
-    resells_supplies: Activity
     resells_end_product: Activity
+    resells_supplies: Activity
     comment: str
 
 
@@ -87,6 +92,23 @@ def _norm(url: str | None) -> str:
     return (url or "").split("://")[-1].removeprefix("www.").rstrip("/").lower()
 
 
+def own_website(url: str | None, evidence_text: str, urls: set[str]) -> str:
+    """The company's website as stage 2 gave it, cut to the site's root, if the evidence shows that site;
+    else "" (a social page is not a website)."""
+    site = clean_url(url or "")
+    if not site or is_social(site):
+        return ""
+    host = bare_host(site)
+    seen = host in evidence_text.lower() or any(_norm(u).split("/")[0] == host for u in urls)
+    return f"https://{urlsplit(site).hostname}" if seen else ""
+
+
+def place(answer: RoleAnswer) -> tuple[str, str]:
+    """Where stage 2 says the company is based: ('Town, ST' or 'Town, Region' or the region alone, country)."""
+    parts = [p.strip() for p in (answer.city, answer.state) if p and p.strip()]
+    return ", ".join(parts), (answer.country or "").strip()
+
+
 def evidence_urls(evidence: dict, products: dict) -> set[str]:
     page = evidence["homepage"]
     links = [page["url"], page.get("final_url")]
@@ -103,12 +125,13 @@ class RoleClassifier(Classifier):
         try:
             evidence, products = await asyncio.gather(
                 self.fetcher.evidence(company, market), self.fetcher.product_search(company, market))
+            text = role_evidence_text(company, evidence, products)
             async with self.limit:
                 response = await self.llm.messages.parse(
                     model=MODEL,
                     max_tokens=4000,
                     system=role_prompt(market.id),
-                    messages=[{"role": "user", "content": role_evidence_text(company, evidence, products)}],
+                    messages=[{"role": "user", "content": text}],
                     output_config={"effort": EFFORT},
                     output_format=RoleAnswer,
                 )
@@ -117,13 +140,15 @@ class RoleClassifier(Classifier):
             answer = response.parsed_output
             # A yes whose URL isn't in the evidence is a weak answer: kept, but flagged for the eval.
             urls = evidence_urls(evidence, products)
+            based_in, based_country = place(answer)
             fields = {}
             for activity in ACTIVITIES:
                 a = getattr(answer, activity)
                 fields |= {activity: a.yes, f"{activity}_url": a.evidence_url if a.yes else None}
             weak = [a for a in ACTIVITIES if fields[a] and _norm(fields[f"{a}_url"]) not in urls]
-            return {**result, "role": derive_role(fields), "company_name": answer.name.strip() or company.name,
-                    "comment": answer.comment, **fields, "weak_evidence": ", ".join(weak),
+            return {**result, "role": derive_role(fields), "company_name": (answer.name or "").strip(),
+                    "own_website": own_website(answer.website, text, urls), "based_in": based_in,
+                    "based_country": based_country, "comment": answer.comment, **fields, "weak_evidence": ", ".join(weak),
                     "role_version": role_version(market.id),
                     "role_input_tokens": response.usage.input_tokens, "role_output_tokens": response.usage.output_tokens}
         except (anthropic.APIError, httpx.HTTPError, RuntimeError, OSError) as e:

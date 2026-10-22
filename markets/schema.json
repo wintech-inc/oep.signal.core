@@ -61,8 +61,8 @@
                 "Manufacturer",
                 "Component Manufacturer",
                 "Component Reseller",
-                "Supply Reseller",
                 "Reseller",
+                "Supply Reseller",
                 "Adjacent"
               ],
               "type": "string"

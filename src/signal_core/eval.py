@@ -218,7 +218,7 @@ def role_report(market: Market, results: list[dict], labels: dict[str, dict]) ->
         return f"| {name} | {pct(x)} | ≥ {target:.0%} | {status} |"
 
     counts = Counter(v["label"] for v in labels.values())
-    short = {r: "".join(w[0] for w in r.split()) for r in ROLES}   # column heads: M, CM, CR, SR, R, A
+    short = {r: "".join(w[0] for w in r.split()) for r in ROLES}   # column heads: M, CM, CR, R, SR, A
     lines = [
         f"# Role eval: {market.name} (`{market.id}`)",
         "",

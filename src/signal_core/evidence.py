@@ -72,7 +72,9 @@ def text_with_links(html: str, base_url: str, limit: int = LIST_CHUNK_CHARS * LI
     for a in tree.css("a"):
         href = (a.attributes.get("href") or "").strip()
         text = a.text(separator=" ", strip=True)
-        if href and not href.startswith(("#", "javascript:", "tel:")):
+        if href.startswith("tel:"):   # a "Call us" button's number is only in its link
+            a.replace_with(f" {text} [{href}] ")
+        elif href and not href.startswith(("#", "javascript:")):
             a.replace_with(f" {text} [{urljoin(base_url, href)}] ")
         else:
             a.replace_with(f" {text} ")

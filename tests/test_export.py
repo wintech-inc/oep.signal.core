@@ -1,5 +1,7 @@
 from signal_core.companies import Company
-from signal_core.export import contact, crm_matches, crm_status, homepage, is_supplier, merge_duplicates, phone_digits, split_address
+from signal_core.export import (
+    abroad, contact, crm_matches, crm_status, homepage, is_supplier, merge_duplicates, names_site, phone_digits, split_address,
+)
 
 
 def test_split_address():
@@ -16,11 +18,26 @@ def test_homepage():
     assert homepage("https://www.ranchkingblinds.com/") == "https://www.ranchkingblinds.com"
     assert homepage("http://acme.com/") == "https://acme.com"
     assert homepage("https://facebook.com/AcmeBlinds") == "https://facebook.com/AcmeBlinds"
-    assert homepage("https://facebook.com/AcmeBlinds", "https://acmeblinds.com/?utm_source=gmb") == "https://acmeblinds.com"
-    assert homepage("https://facebook.com/AcmeBlinds", "https://www.facebook.com/AcmeBlinds/") == "https://facebook.com/AcmeBlinds"
-    # A deep page may be someone else's site: the listing's website wins, else the page itself is kept.
-    assert homepage("https://news.com/2024/acme-opens", "http://www.acmeblinds.com/home") == "https://www.acmeblinds.com"
-    assert homepage("https://news.com/2024/acme-opens") == "https://news.com/2024/acme-opens"
+    # The website stage 2 found in the evidence wins.
+    assert homepage("https://facebook.com/AcmeBlinds", "https://acmeblinds.com", "https://other.com") == "https://acmeblinds.com"
+    # A map listing's website only when it is named after the company.
+    assert homepage("https://facebook.com/AcmeBlinds", "", "https://acmeblinds.com/?utm_source=gmb", "Acme Blinds") == "https://acmeblinds.com"
+    assert homepage("https://instagram.com/lazymanoutdoors", "", "https://printkindred.com/", "Lazy Man Outdoors") == \
+        "https://instagram.com/lazymanoutdoors"
+    assert homepage("https://facebook.com/AcmeBlinds", "", "https://www.facebook.com/AcmeBlinds/", "Acme") == "https://facebook.com/AcmeBlinds"
+    # A deep page: its root when the site is named after the company, else the listing's website, else the page.
+    assert homepage("https://www.bigdutchmanusa.com/en/egg-production/", "", None, "Big Dutchman") == "https://www.bigdutchmanusa.com"
+    assert homepage("https://news.com/2024/acme-opens", "", "http://www.acmeblinds.com/home", "Acme Blinds") == "https://www.acmeblinds.com"
+    assert homepage("https://news.com/2024/acme-opens", "", None, "Acme Blinds") == "https://news.com/2024/acme-opens"
+    assert homepage("https://epsbuildings.com/our-company/", "", "https://www.epsbuildings.com/", "Energy Panel Structures") == \
+        "https://www.epsbuildings.com"
+
+
+def test_names_site():
+    assert names_site("45North", "https://www.45northme.com")
+    assert names_site("ChickenHouses.com", "https://chickenhouses.com")
+    assert not names_site("45North", "https://www.sugarloaf.com")
+    assert not names_site("Lazy Man Outdoors", "https://printkindred.com")
 
 
 def test_is_supplier():
@@ -37,6 +54,25 @@ def test_contact_takes_the_matching_listing_only():
     assert (found["city"], found["phone"], found["maps_url"]) == ("Tyler", "(903) 555-0101", "https://www.google.com/maps?cid=2")
     assert contact(places, "acmeblinds.com", ["Acme Blinds"], "OK", "q")["phone"] == ""   # listing in another state
     assert contact(places, "nobody.com", ["Nobody"], None, "q")["city"] == ""
+    # A listing whose website is another site than the company's own is a same-named business.
+    places[1]["website"] = "http://acmeblindsnj.com/"
+    assert contact(places, "acmeblinds.com", ["Acme Blinds"], None, "q", "https://acmeblinds.com")["phone"] == ""
+    assert contact(places, "acmeblinds.com", ["Acme Blinds"], None, "q")["phone"] == "(903) 555-0101"
+    # A phone field that isn't a phone number is dropped.
+    places[1]["phone"] = "29800 135th Ave"
+    assert contact(places, "acmeblinds.com", ["Acme Blinds"], None, "q")["phone"] == ""
+
+
+def test_abroad():
+    home = {"TX", "AL"}
+    assert abroad({}, home) is None
+    assert abroad({"based_in": "Waco, TX", "based_country": "US"}, home) is None
+    assert "India" in abroad({"based_in": "Pune", "based_country": "India"}, home)
+    assert "Anchorage, AK" in abroad({"based_in": "Anchorage, AK", "based_country": "US"}, home)
+    assert "map listing address" in abroad({"contact": {"address": "Calle 5, Rosario, Santa Fe, Argentina", "state": ""}}, home)
+    assert "+44" in abroad({"contact": {"address": "", "phone": "+44 1568 708819"}}, home)
+    assert abroad({"contact": {"address": "", "phone": "+1 254-555-0100"}}, home) is None
+    assert "Canada" in abroad({"site_contact": {"source": "website", "country": "Canada"}}, home)
 
 
 def row(company, url, home, phone="", city=""):
@@ -56,14 +92,17 @@ def test_merge_duplicates_keeps_the_own_site_row():
         row("Yoder Blinds", "https://www.yoderblinds.com", "https://www.yoderblinds.com", "(555) 222-0000"),
         row("Elite Buildings", "https://elite-a.com", "https://elite-a.com", "(555) 333-0000"),
         row("Elite Buildings", "https://elite-b.com", "https://elite-b.com", "(555) 444-0000"),
+        row("PA Deer Blinds", "https://www.padeerblinds.com", "https://www.padeerblinds.com", "(555) 555-0000"),
+        row("Pennsylvania Deer Blinds", "https://instagram.com/padeerblinds", "https://instagram.com/padeerblinds"),
     ]
     kept, merged = merge_duplicates(rows)
     assert [r["Company"] for r in kept] == ["Strand Ag Supply Inc", "X Co", "Redneck Blinds", "Black Dog Blinds",
-                                            "Yoder Blinds", "Elite Buildings", "Elite Buildings"]
+                                            "Yoder Blinds", "Elite Buildings", "Elite Buildings", "PA Deer Blinds"]
     assert kept[0]["City"] == "Ames" and kept[1]["_url"] == "https://www.x.com"
     assert [(a["_url"], b["_url"]) for a, b in merged] == [
         ("https://strandagsupply.com", "https://facebook.com/strandag"), ("https://www.x.com", "https://news.com/x-co-opens"),
-        ("https://www.yoderblinds.com", "https://instagram.com/yoderblinds")]
+        ("https://www.yoderblinds.com", "https://instagram.com/yoderblinds"),
+        ("https://www.padeerblinds.com", "https://instagram.com/padeerblinds")]
     assert phone_digits("+1 (555) 010-0000") == phone_digits("555.010.0000") == "5550100000"
 
 

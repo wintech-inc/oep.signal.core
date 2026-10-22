@@ -588,9 +588,10 @@ class Discovery:
 
         await asyncio.gather(*(one(c) for c in pending))
 
-    def gate(self, c: dict) -> bool:
-        """The brief's hard geography: a company known to be based outside it is out, and is never classified."""
-        why = outside_geography(c, self.home, self.countries)
+    def gate(self, c: dict, why: str | None = None) -> bool:
+        """The brief's hard geography: a company known to be based outside it is out, and is never classified.
+        `why` gives a reason found elsewhere (the CRM export's map listing or website)."""
+        why = why or outside_geography(c, self.home, self.countries)
         if why:
             c.update({k: None for k in VERDICT_FIELDS})
             c.update(verdict="out", reason=f"Not classified: based outside the market's geography ({why}).")
@@ -869,7 +870,22 @@ async def write_queries(market: Market) -> QueryFile:
 CONTACT_FIELDS = ["street", "city", "state", "zip", "phone", "website", "maps_url"]
 LEAD_COLUMNS = ["company_id", "name", "url", "location", "role", "comment",
                 *[f for a in ACTIVITIES for f in (a, f"{a}_url")], "weak_evidence", "rule", "reason", "evidence_url",
-                *CONTACT_FIELDS, "sources", "found_by", "round", "seed"]
+                *CONTACT_FIELDS, "from_site", "sources", "found_by", "round", "seed"]
+
+
+def merged_contact(c: dict) -> dict:
+    """The CRM export's contact fields: the map listing's, with a blank phone, or a missing street address,
+    filled from the company's own website (`site_contact`). `from_site` names what the website filled."""
+    out = {k: (c.get("contact") or {}).get(k) or "" for k in CONTACT_FIELDS}
+    site = c.get("site_contact") or {}
+    filled = []
+    if not out["phone"] and site.get("phone"):
+        out["phone"] = site["phone"]
+        filled.append("phone")
+    if not out["street"] and site.get("street") and site.get("city") and site.get("state"):
+        out.update({k: site.get(k) or "" for k in ("street", "city", "state", "zip")})
+        filled.append("address")
+    return {**out, "from_site": ", ".join(filled)}
 
 
 def display_name(c: dict) -> str:
@@ -889,7 +905,7 @@ def write_leads(market_id: str, state: dict) -> Path:
         writer = csv.DictWriter(f, fieldnames=LEAD_COLUMNS, extrasaction="ignore")
         writer.writeheader()
         for c in rows:
-            writer.writerow({**c, **(c.get("contact") or {}), "name": display_name(c),
+            writer.writerow({**c, **merged_contact(c), "name": display_name(c),
                              "sources": ", ".join(sorted(sources_of(c))),
                              "found_by": "; ".join(f["detail"] for f in c["found_by"][:3])})
     return path
