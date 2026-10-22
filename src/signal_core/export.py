@@ -107,9 +107,11 @@ def contact(places: list[dict], company_id: str, names: list[str], known_state: 
 
 
 def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dict]]]:
-    """Rows with the same homepage, or the same phone number and names that contain one another, are one
-    company (typically its Facebook page and its website). A phone number alone is not enough: dealers and
-    sister companies share numbers. The own-site row is kept, with blank contact fields filled from the others.
+    """Rows with the same homepage, or the same phone number and names that contain one another, or the same
+    name and no conflicting state or phone, are one company (typically its Facebook page and its website).
+    A phone number alone is not enough (dealers and sister companies share numbers), and nor is a name alone
+    (same-named businesses in other states, or one company's separate locations, each have their own number).
+    The own-site row is kept, with blank contact fields filled from the others.
     Returns the kept rows, in order, and (kept, dropped) row pairs."""
     parent = list(range(len(rows)))
 
@@ -121,7 +123,17 @@ def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dic
 
     by_home: dict[str, int] = {}
     by_phone: dict[str, list[int]] = {}
+    by_name: dict[str, list[int]] = {}
+
+    def fits(a: str, b: str) -> bool:
+        return not a or not b or a == b
+
     for i, r in enumerate(rows):
+        if name := norm_name(r["Company"]):
+            for j in by_name.setdefault(name, []):
+                if fits(r["State"], rows[j]["State"]) and fits(phone_digits(r["Phone"]), phone_digits(rows[j]["Phone"])):
+                    parent[find(i)] = find(j)
+            by_name[name].append(i)
         home = r["Homepage"].split("://")[-1].removeprefix("www.").rstrip("/").lower()
         parent[find(i)] = find(by_home.setdefault(home, i))
         if phone := phone_digits(r["Phone"]):
@@ -148,13 +160,22 @@ def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dic
     return [row for _, row in sorted(kept, key=lambda x: x[0])], merged
 
 
-def crm_status(company: Company | None) -> str:
+def crm_status(companies: list[Company]) -> str:
     """The company's role in the CRM list it came from ('Lead', 'Customer', ...), blank when it isn't on it.
     The few companies with several CRM rows get each distinct role, alphabetically."""
-    return "; ".join(sorted({t.role for t in company.crm})) if company else ""
+    return "; ".join(sorted({t.role for c in companies for t in c.crm}))
 
 
-def crm_row(market: Market, c: dict, known: dict[str, Company] | None = None) -> dict:
+def crm_matches(c: dict, known: dict[str, Company], by_name: dict[str, list[Company]]) -> list[Company]:
+    """The CRM list's entry for a company: the same website or page, else exactly the same name (the CRM may
+    hold its website while discovery found its Facebook page, or the other way round)."""
+    if c["company_id"] in known:
+        return [known[c["company_id"]]]
+    names = dict.fromkeys(norm_name(n) for n in (display_name(c), c["name"]))
+    return list({k.id: k for n in names if n for k in by_name.get(n, [])}.values())
+
+
+def crm_row(market: Market, c: dict, crm: list[Company] = ()) -> dict:
     ct = c.get("contact") or {}
     url = role_url(c)
     return {
@@ -163,7 +184,7 @@ def crm_row(market: Market, c: dict, known: dict[str, Company] | None = None) ->
         "Street address": ct.get("street", ""), "City": ct.get("city", ""), "State": ct.get("state", ""),
         "ZIP": ct.get("zip", ""), "Phone": ct.get("phone", ""),
         "Comments": (c.get("comment") or "").strip() + (f" Source: {url}" if url else ""),
-        "Lead Source": LEAD_SOURCE, "CRM Status": crm_status((known or {}).get(c["company_id"])),
+        "Lead Source": LEAD_SOURCE, "CRM Status": crm_status(list(crm)),
         "_url": c["url"], "_maps": ct.get("maps_url", ""),
     }
 
@@ -218,7 +239,11 @@ async def export(market: Market, max_cost: float = MAX_COST) -> dict:
     ours = {c["company_id"] for c in ready if is_supplier(display_name(c), market.supplier)}
     ready = [c for c in ready if c["company_id"] not in ours]
     known = {k.id: k for k in load_companies()}
-    rows, merged = merge_duplicates([crm_row(market, c, known) for c in ready])
+    by_name: dict[str, list[Company]] = {}
+    for k in known.values():
+        for n in dict.fromkeys(norm_name(x) for x in [k.name, *k.aliases]):
+            by_name.setdefault(n, []).append(k)
+    rows, merged = merge_duplicates([crm_row(market, c, crm_matches(c, known, by_name)) for c in ready])
     paths = {"crm": EXPORTS_DIR / f"crm_{market.id}.csv", "leads": write_leads(market.id, d.state),
              "report": EVAL_DIR / f"export_{market.id}.md", "contacts": EVAL_DIR / f"review_contacts_{market.id}.csv"}
     write_csv(paths["crm"], CRM_COLUMNS, rows)

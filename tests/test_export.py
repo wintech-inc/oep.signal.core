@@ -1,5 +1,5 @@
 from signal_core.companies import Company
-from signal_core.export import contact, crm_status, homepage, is_supplier, merge_duplicates, phone_digits, split_address
+from signal_core.export import contact, crm_matches, crm_status, homepage, is_supplier, merge_duplicates, phone_digits, split_address
 
 
 def test_split_address():
@@ -52,18 +52,33 @@ def test_merge_duplicates_keeps_the_own_site_row():
         row("X Co", "https://www.x.com", "https://www.x.com"),
         row("Redneck Blinds", "https://redneckblinds.com", "https://redneckblinds.com", "(555) 999-0000"),
         row("Black Dog Blinds", "https://blackdogblinds.com", "https://blackdogblinds.com", "(555) 999-0000"),
+        row("Yoder Blinds", "https://instagram.com/yoderblinds", "https://instagram.com/yoderblinds"),
+        row("Yoder Blinds", "https://www.yoderblinds.com", "https://www.yoderblinds.com", "(555) 222-0000"),
+        row("Elite Buildings", "https://elite-a.com", "https://elite-a.com", "(555) 333-0000"),
+        row("Elite Buildings", "https://elite-b.com", "https://elite-b.com", "(555) 444-0000"),
     ]
     kept, merged = merge_duplicates(rows)
-    assert [r["Company"] for r in kept] == ["Strand Ag Supply Inc", "X Co", "Redneck Blinds", "Black Dog Blinds"]
+    assert [r["Company"] for r in kept] == ["Strand Ag Supply Inc", "X Co", "Redneck Blinds", "Black Dog Blinds",
+                                            "Yoder Blinds", "Elite Buildings", "Elite Buildings"]
     assert kept[0]["City"] == "Ames" and kept[1]["_url"] == "https://www.x.com"
     assert [(a["_url"], b["_url"]) for a, b in merged] == [
-        ("https://strandagsupply.com", "https://facebook.com/strandag"), ("https://www.x.com", "https://news.com/x-co-opens")]
+        ("https://strandagsupply.com", "https://facebook.com/strandag"), ("https://www.x.com", "https://news.com/x-co-opens"),
+        ("https://www.yoderblinds.com", "https://instagram.com/yoderblinds")]
     assert phone_digits("+1 (555) 010-0000") == phone_digits("555.010.0000") == "5550100000"
 
 
 def test_crm_status():
-    assert crm_status(None) == ""
+    assert crm_status([]) == ""
     company = Company(id="a.com", name="A", url="https://a.com",
                       crm=[{"market": "Poultry", "role": "Lead"}, {"market": "Agriculture", "role": "Lead"},
                            {"market": "Poultry", "role": "Customer"}])
-    assert crm_status(company) == "Customer; Lead"
+    assert crm_status([company]) == "Customer; Lead"
+
+
+def test_crm_matches_by_page_then_exact_name():
+    a = Company(id="farmerboyag.com", name="Farmer Boy", url="https://farmerboyag.com", crm=[{"market": "Poultry", "role": "Lead"}])
+    known, by_name = {a.id: a}, {"farmerboy": [a]}
+    assert crm_matches({"company_id": "farmerboyag.com", "name": "x"}, known, by_name) == [a]
+    assert crm_matches({"company_id": "facebook.com/farmerboyag", "name": "Farmer Boy", "url": "https://facebook.com/farmerboyag"},
+                       known, by_name) == [a]
+    assert crm_matches({"company_id": "other.com", "name": "Farmer Boy Sheds", "url": "https://other.com"}, known, by_name) == []
