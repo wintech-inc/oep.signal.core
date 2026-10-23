@@ -79,8 +79,8 @@ def test_abroad():
     assert "Canada" in abroad({"site_contact": {"source": "website", "country": "Canada"}}, home)
 
 
-def row(company, url, home, phone="", city=""):
-    return {"Company": company, "Homepage": home, "Phone": phone, "City": city, "Street address": "", "State": "",
+def row(company, url, home, phone="", city="", state=""):
+    return {"Company": company, "Homepage": home, "Phone": phone, "City": city, "Street address": "", "State": state,
             "ZIP": "", "CRM Status": "", "_url": url}
 
 
@@ -98,15 +98,21 @@ def test_merge_duplicates_keeps_the_own_site_row():
         row("Elite Buildings", "https://elite-b.com", "https://elite-b.com", "(555) 444-0000"),
         row("PA Deer Blinds", "https://www.padeerblinds.com", "https://www.padeerblinds.com", "(555) 555-0000"),
         row("Pennsylvania Deer Blinds", "https://instagram.com/padeerblinds", "https://instagram.com/padeerblinds"),
+        row("Formex Manufacturing, Inc.", "https://www.formex.com", "https://www.formex.com", "(555) 600-0000", state="GA"),
+        row("Formex Manufacturing", "https://snaplockblinds.com", "https://snaplockblinds.com", "(555) 600-1111", state="GA"),
+        row("Orion Hunting Products", "https://huntorion.com", "https://huntorion.com", "(555) 700-0000"),
+        row("Orion Hunting Blinds", "https://facebook.com/61575049126137", "https://facebook.com/61575049126137", "(555) 700-0000"),
     ]
     kept, merged = merge_duplicates(rows)
     assert [r["Company"] for r in kept] == ["Strand Ag Supply Inc", "X Co", "Redneck Blinds", "Black Dog Blinds",
-                                            "Yoder Blinds", "Elite Buildings", "Elite Buildings", "PA Deer Blinds"]
+                                            "Yoder Blinds", "Elite Buildings", "Elite Buildings", "PA Deer Blinds",
+                                            "Formex Manufacturing, Inc.", "Orion Hunting Products"]
     assert kept[0]["City"] == "Ames" and kept[1]["_url"] == "https://www.x.com"
     assert [(a["_url"], b["_url"]) for a, b in merged] == [
         ("https://strandagsupply.com", "https://facebook.com/strandag"), ("https://www.x.com", "https://news.com/x-co-opens"),
         ("https://www.yoderblinds.com", "https://instagram.com/yoderblinds"),
-        ("https://www.padeerblinds.com", "https://instagram.com/padeerblinds")]
+        ("https://www.padeerblinds.com", "https://instagram.com/padeerblinds"),
+        ("https://www.formex.com", "https://snaplockblinds.com"), ("https://huntorion.com", "https://facebook.com/61575049126137")]
     assert phone_digits("+1 (555) 010-0000") == phone_digits("555.010.0000") == "5550100000"
 
 
@@ -128,6 +134,6 @@ def test_crm_matches_by_page_then_exact_name():
 
 
 def test_us_phone():
-    assert us_phone("+1 (270) 748-2541") == us_phone("270.748.2541") == us_phone("1-270-748-2541") == "(270) 748-2541"
-    assert us_phone("(254)725-4554 ext. 12") == "(254) 725-4554"
+    assert us_phone("+1 (270) 748-2541") == us_phone("270.748.2541") == us_phone("1-270-748-2541") == "270-748-2541"
+    assert us_phone("(254)725-4554 ext. 12") == "254-725-4554"
     assert us_phone("+44 1568 708819") == us_phone("1300-655-735 (AUS)") == us_phone("018 462 0784") == us_phone("") == ""

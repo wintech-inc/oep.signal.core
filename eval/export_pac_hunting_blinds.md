@@ -1,23 +1,23 @@
 # CRM export: Hunting Blinds (`pac_hunting_blinds`)
 
-**884 companies** in `exports/crm_pac_hunting_blinds.csv`, 433 of them in lead roles (Manufacturer, Component Reseller, Supply Reseller).
+**872 companies** in `exports/crm_pac_hunting_blinds.csv`, 426 of them in lead roles (Manufacturer, Component Reseller, Supply Reseller).
 
 | Role | Companies |
 |---|---|
-| Manufacturer | 385 |
+| Manufacturer | 379 |
 | Component Manufacturer | 10 |
-| Component Reseller | 31 |
-| Reseller | 422 |
+| Component Reseller | 30 |
+| Reseller | 418 |
 | Supply Reseller | 17 |
-| Adjacent | 19 |
+| Adjacent | 18 |
 
 ## Contact fields filled
 
 | Street address | City | State | ZIP | Phone |
 |---|---|---|---|---|
-| 687 (78%) | 697 (79%) | 697 (79%) | 668 (76%) | 814 (92%) |
+| 676 (78%) | 686 (79%) | 686 (79%) | 657 (75%) | 802 (92%) |
 
-Filled from the company's own website or a web search where the map listing had none: 154 phone numbers, 390 addresses. Blank means neither showed it; nothing is guessed. Spot-check sheet: `eval/review_contacts_pac_hunting_blinds.csv`.
+Filled from the company's own website or a web search where the map listing had none: 147 phone numbers, 383 addresses. Blank means neither showed it; nothing is guessed. Spot-check sheet: `eval/review_contacts_pac_hunting_blinds.csv`.
 
 ## Not exported
 
@@ -42,6 +42,7 @@ Filled from the company's own website or a web search where the map listing had 
 - Central Florida Trophy Hunts (http://www.gatorhuntingequipment.com/) kept; Central Florida Trophy Hunts (https://facebook.com/centralfloridatrophyhunts) dropped
 - FatBoy Blinds (https://fatboyblind.com/) kept; Fatboy Blinds (https://instagram.com/fatboyblinds) dropped
 - FatBoy Blinds (https://fatboyblind.com/) kept; FatBoy Blinds (https://facebook.com/fatboyblinds) dropped
+- Formex Manufacturing, Inc. (http://www.formex.com) kept; Formex Manufacturing (https://www.snaplockhuntingblinds.com/) dropped
 - Radix Hunting (https://www.radixhunting.com/) kept; Radix Affordable Blinds (https://facebook.com/rodneyh2022) dropped
 - Beeney Buildings LLC (https://www.beeneybuildings.com/) kept; Beeney Buildings LLC (https://facebook.com/61562299113353) dropped
 - Countryside Barns (https://countrysidebarns.com/) kept; Countryside Barns (https://facebook.com/countrysidebarns) dropped
@@ -65,6 +66,7 @@ Filled from the company's own website or a web search where the map listing had 
 - The Antler Shed Deer Blinds (https://theantlersheddeerblinds.com) kept; The Antler Shed Deer Blinds (https://www.ktbs.com/news/first-news/arklatex-made-shreveport-company-manufactures-high-quality-deer-hunting-blinds/article_b3865a01-ebd5-4c97-9668-8529f390c302.html) dropped
 - Orion Hunting Products (https://huntorion.com/) kept; Orion Hunting Products (https://www.uppermichiganssource.com/2022/04/05/orion-hunting-products-recognized-across-michigan-company-growth/) dropped
 - Orion Hunting Products (https://huntorion.com/) kept; Orion Hunting Products (https://shop.huntorion.com/collections/hunting-blind-accessories) dropped
+- Orion Hunting Products (https://huntorion.com/) kept; Orion Hunting Blinds (https://facebook.com/61575049126137) dropped
 - Productive Cedar Products LLC (https://www.huntingdeerblinds.com/) kept; Productive Cedar Products LLC (https://prefabcatalog.com/manufacturers/productive-cedar-products-llc) dropped
 - Deer Stands Direct (https://deerstandsdirect.com/) kept; Deer Stands Direct LLC (https://instagram.com/deerstandsdirect) dropped
 - Bolder River Outdoors (https://www.bolderriver.com/) kept; Bolder River Outdoors (https://instagram.com/bolderriveroutdoors) dropped
@@ -81,6 +83,7 @@ Filled from the company's own website or a web search where the map listing had 
 - Rutt Hutts (https://www.rutthutts.com/) kept; Rutt Hutts (https://facebook.com/100090367501710) dropped
 - All Star Sheds LLC (http://allstarshedsllc.com/) kept; All Star Sheds LLC (https://allstarshed.com/index.php) dropped
 - D & M Hunting Blinds LLC (https://dandmhuntingblinds.com/) kept; D&M Hunting Blinds (https://facebook.com/100083559611479) dropped
+- JDM Homes (https://jdm-homes.com/) kept; JDM Structures (http://jdmstructures.com/) dropped
 - Oak Ridge Hunting Blinds (https://oakridgehuntingblinds.com/) kept; Oak Ridge Hunting Blinds (https://facebook.com/OakRidgeHuntingBlinds) dropped
 - Cast & Bang Outfitters (http://www.castandbang.com/) kept; Cast & Bang (https://facebook.com/castandbang) dropped
 - Cast & Bang Outfitters (http://www.castandbang.com/) kept; Cast & Bang Outfitters (https://instagram.com/castandbang) dropped
@@ -90,6 +93,8 @@ Filled from the company's own website or a web search where the map listing had 
 - 12 Point Hunting Blinds (https://www.12pointhuntingblinds.com/) kept; 12 Point Hunting Blinds (https://voss26.smallworldlabs.com/co/12-point-hunting-blinds) dropped
 - 360 Hunting Blinds (https://360huntingblinds.com/) kept; 360 Hunting Blinds (https://facebook.com/EshsStorageBarn) dropped
 - 360 Hunting Blinds (https://360huntingblinds.com/) kept; 360 Hunting Blinds (https://facebook.com/360huntingblinds) dropped
+- Black Arrow Hunting Blinds (https://blackarrowhuntingblinds.com/) kept; Black Arrow Hunting Blinds (https://www.yardscapeab.com/hunting-blinds/) dropped
+- Esh's Storage Barns (https://eshsheds.com/) kept; Esh's Storage Barns (https://facebook.com/Eshstoragebarns) dropped
 - Food Plots (https://foodplotting.com/360huntingblinds/) kept; Reed's Custom Food Plots (https://facebook.com/ReedsCustomFoodPlots) dropped
 - Pennsylvania Deer Blinds (https://padeerblinds.com/) kept; Pa Deer Blinds (https://instagram.com/padeerblinds) dropped
 - Pine Creek Structures (https://wilkesbarresheds.com/) kept; Pine Creek Structures (http://www.sgsheds.com/) dropped
@@ -111,9 +116,11 @@ Filled from the company's own website or a web search where the map listing had 
 - Bitter Creek Deer Blinds (https://bittercreekblinds.com/) kept; Bitter Creek Blinds (https://facebook.com/BITTERCREEKMFG) dropped
 - Boss Game Systems (https://bossgamesystems.com) kept; Boss Game Systems (https://facebook.com/thebossgamesystems) dropped
 - Dillon Manufacturing (https://www.dillonmanuf.com) kept; Dillon Manufacturing (https://instagram.com/dillonblinds) dropped
+- G & G Fiberglass (https://ggfiberglass.com/) kept; G and G Fiberglass (https://potbellyblind.com/) dropped
 - Hawk Hunting (https://shop.hawkhunting.com) kept; Hawk Hunting (https://www.hawkhunting.com/products/hawk-the-compound-box-blind/) dropped
 - Ranch King (https://www.ranchkingblinds.com) kept; MB Ranch King Blinds (https://www.fwssr.com/business/mb-ranch-king) dropped
 - Oasis Outback (https://oasisoutback.com/) kept; Oasis Outback (https://facebook.com/oasisoutback) dropped
+- Premier Portable Buildings of West Texas (https://facebook.com/PremierBuildingsofWestTexas) kept; Premier Portable Buildings and Trailers of Texas (https://facebook.com/premierportablebuildingsoftexas) dropped
 - Tank Blinds (https://tankblinds.com/) kept; Tank Blinds (https://facebook.com/TankBlinds) dropped
 - Texas Deer Stands (https://texasdeerstands.com/) kept; Texas Deer Stands (https://facebook.com/TexasDeerStands) dropped
 - Texas Hunter Products (https://texashunterproducts.com/) kept; Texas Hunter Products (https://facebook.com/TexasHunterProducts) dropped
@@ -130,6 +137,7 @@ Filled from the company's own website or a web search where the map listing had 
 - Zero 4 Outdoors (https://www.zero4outdoors.com/) kept; Zero 4 Outdoors (https://instagram.com/zero4outdoors) dropped
 - 8 Point Blinds (https://www.8pointblinds.com/) kept; 8 Point Hunting Blinds (https://instagram.com/8pointhuntingblinds) dropped
 - Amish Backyard Structures (https://amishbackyardstructures.com/) kept; A B Sheds LLC (https://facebook.com/amishbackyardstructures) dropped
+- Diamond Blinds (https://www.diamondhuntingblinds.com/) kept; Diamond Blinds (https://diamondblindsiowa.com/) dropped
 - Diamond Blinds (https://www.diamondhuntingblinds.com/) kept; Diamond Blinds (https://facebook.com/100064537762667) dropped
 - Dropout Blinds (https://dropoutblinds.com/) kept; Dropout Blinds (https://facebook.com/dropoutblinds) dropped
 - Elite Hunting Blinds (https://elitehuntingblinds.com/) kept; Elite Hunting Blinds (https://facebook.com/61575150694841) dropped
@@ -151,6 +159,7 @@ Filled from the company's own website or a web search where the map listing had 
 - The Buckstop USA (http://buckstopusa.com/) kept; The Buckstop USA (https://facebook.com/TheBuckstop) dropped
 - Outdoors For Less (https://www.outdoorsforless.com/collections/deer-blinds) kept; Outdoors For Less (https://facebook.com/outdoorsforless) dropped
 - Buckstop Outdoors, LLC (https://buckstophunting.com/) kept; Buckstop Hunting (https://instagram.com/buckstophunting) dropped
+- McCoy's Building Supply (https://www.mccoys.com/shop/p/1382130/trophy-view-wd-db36x115-deer-blind-window-36-in-l-11-12-in-h-bronze) kept; McCoy's Building Supply (https://mccoys-website.useast01.umbraco.io/shop/c/109112104104109000/hunting-blinds-boats-supplies) dropped
 - J and L Huntin Store (https://jandlsales.com/collections/blinds) kept; J and L Huntin Store (https://facebook.com/jandlsalesciscotx) dropped
 - The Buck Depot (https://buck-depot.com/) kept; The Buck Depot (https://instagram.com/thebuckdepot) dropped
 - Triple J Farm And Fence (https://triplejfarmandfence.com/) kept; Triple J Farm & Fence (https://facebook.com/triplejfarmandfence) dropped
@@ -159,6 +168,7 @@ Filled from the company's own website or a web search where the map listing had 
 - Back 40 Hunting Supplies (http://back40huntingsupplies.com/) kept; Back 40 Hunting Supplies (https://facebook.com/Back40huntingsupplies) dropped
 - Kline Outdoors (https://deerblinds.com/) kept; DeerBlinds.com (https://facebook.com/deerblinds) dropped
 - The Shed Place Kentucky (http://www.theshedplaceky.com/) kept; The Shed Place (https://facebook.com/theshedplaceky) dropped
+- Delta Home Center (https://deltahomecenter.com/hunting-stands) kept; Delta Trailer Sales (https://deltatrailersales.com/deer-stands) dropped
 - Industrial Service & Supply (https://www.industrialserviceandsupply.com/deer-blinds) kept; Industrial Service and Supply (https://facebook.com/industrialserviceandsupply) dropped
 - O'Neal's Farm and Garden (http://onealsfarmandgarden.com/) kept; O'Neal's Farm & Garden (https://facebook.com/onealsfarmandgarden) dropped
 - Michigan Hunting Blinds (https://michiganhuntingblinds.com/) kept; Chad Studley (https://instagram.com/michiganhuntingblinds) dropped
@@ -168,8 +178,10 @@ Filled from the company's own website or a web search where the map listing had 
 - Double MW Sheds (https://www.doublemwoperations.com/) kept; Double MW Sheds (https://www.doublemwsheds.com/hunting-blinds/) dropped
 - Foote's Amish Sheds (https://shedsbarnsgazebosamishbuiltbyfoote.com/) kept; Foote's Amish Sheds and Gazebos (http://amishshedsbyfoote.com/) dropped
 - Bucked Up Outdoors LLC (https://www.buckedupoutdoor.com/) kept; Bucked Up Outdoors (https://instagram.com/buckedupoutdoors) dropped
+- Black Creek Sports (https://blackcreeksports.com/) kept; Black Creek Enterprises (https://www.blackcreekent.com/) dropped
 - Hilltop Hunting Blinds (http://www.hilltophuntingblinds.com/) kept; Hilltop Hunting Blinds (https://instagram.com/hilltophuntingblinds) dropped
 - Hoffpauir Ranch and Supply (https://www.hranchandsupply.com/) kept; Hoffpauir Ranch and Supply (https://facebook.com/HoffpauirRanchAndSupplyLampasasTx) dropped
+- The Forest Store (http://theforeststore.com/) kept; The Forest Store (https://store.phillipsforestproducts.com/collections/deer-blinds) dropped
 - Straight Arrow Outdoors, LLC (https://www.straightarrowoutdoorsllc.com/) kept; Straight Arrow Outdoors, LLC (https://facebook.com/StraightArrowOutdoorsLLC) dropped
 - Hedges Ag Service, Inc. (http://www.hedgesag.com/) kept; Hedges Ag Service, Inc. (https://facebook.com/hedgesag) dropped
 

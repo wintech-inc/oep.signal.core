@@ -164,7 +164,8 @@ def town_of(c: dict) -> str | None:
 
 
 def us_phone(phone: str | None) -> str:
-    """A US or North American number in one format, '(270) 748-2541'; "" for anything else (another country's
+    """A US or North American number in one format, '270-748-2541' (the CRM reads '(270) ...' as a country
+    code); "" for anything else (another country's
     code, or digits that can't be a North American number, such as '1300-655-735 (AUS)')."""
     if not phone or is_foreign_phone(phone):
         return ""
@@ -172,7 +173,7 @@ def us_phone(phone: str | None) -> str:
     digits = digits[1:] if len(digits) == 11 and digits[0] == "1" else digits
     if not re.fullmatch(r"[2-9]\d{2}[2-9]\d{6}", digits):
         return ""
-    return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+    return f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
 
 
 def is_foreign_phone(phone: str | None) -> bool:
@@ -203,12 +204,29 @@ def abroad(c: dict, home: set[str]) -> str | None:
     return None
 
 
+LEGAL_SUFFIXES = {"inc", "incorporated", "llc", "co", "corp", "corporation", "company", "ltd"}
+
+
+def base_name(name: str) -> str:
+    """A company name without its legal suffix, letters and digits only ('Formex Manufacturing, Inc.' ->
+    'formexmanufacturing')."""
+    words = re.findall(r"[a-z0-9]+", name.lower())
+    while len(words) > 1 and words[-1] in LEGAL_SUFFIXES:
+        words.pop()
+    return "".join(words)
+
+
+def first_word(name: str) -> str:
+    return next(iter(re.findall(r"[a-z0-9]+", name.lower())), "")
+
+
 def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dict]]]:
-    """Rows with the same homepage, or the same phone number and names that contain one another, or the same
-    name and no conflicting state or phone, are one company (typically its Facebook page and its website).
-    A phone number alone is not enough (dealers and sister companies share numbers), and nor is a name alone
-    (same-named businesses in other states, or one company's separate locations, each have their own number).
-    The own-site row is kept, with blank contact fields filled from the others.
+    """Rows with the same homepage, or the same phone number and names that contain one another or start with
+    the same word, or the same name (legal suffixes aside) and the same state or no conflicting state or phone,
+    are one company (typically its Facebook page and its website, or two of its sites). A phone number alone
+    is not enough (dealers and sister companies share numbers), and nor is a name alone (same-named businesses
+    in other states each have their own number). The row on the company's own, name-bearing site is kept,
+    with blank contact fields filled from the others.
     Returns the kept rows, in order, and (kept, dropped) row pairs."""
     parent = list(range(len(rows)))
 
@@ -236,9 +254,11 @@ def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dic
             for j in by_handle.get(label, []):
                 parent[find(i)] = find(j)
             by_label.setdefault(label, []).append(i)
-        if name := norm_name(r["Company"]):
+        if name := base_name(r["Company"]):
             for j in by_name.setdefault(name, []):
-                if fits(r["State"], rows[j]["State"]) and fits(phone_digits(r["Phone"]), phone_digits(rows[j]["Phone"])):
+                same_state = r["State"] and r["State"] == rows[j]["State"]
+                if same_state or (fits(r["State"], rows[j]["State"])
+                                  and fits(phone_digits(r["Phone"]), phone_digits(rows[j]["Phone"]))):
                     parent[find(i)] = find(j)
             by_name[name].append(i)
         home = r["Homepage"].split("://")[-1].removeprefix("www.").rstrip("/").lower()
@@ -247,7 +267,7 @@ def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dic
             a = norm_name(r["Company"])
             for j in by_phone.setdefault(phone, []):
                 b = norm_name(rows[j]["Company"])
-                if a and b and (a in b or b in a):
+                if a and b and (a in b or b in a or first_word(r["Company"]) == first_word(rows[j]["Company"])):
                     parent[find(i)] = find(j)
             by_phone[phone].append(i)
     groups: dict[int, list[int]] = {}
@@ -255,7 +275,8 @@ def merge_duplicates(rows: list[dict]) -> tuple[list[dict], list[tuple[dict, dic
         groups.setdefault(find(i), []).append(i)
     kept, merged = [], []
     for members in groups.values():
-        best = min(members, key=lambda i: (is_social(rows[i]["_url"]), is_deep(rows[i]["_url"]), i))
+        best = min(members, key=lambda i: (is_social(rows[i]["_url"]), not names_site(rows[i]["Company"], rows[i]["Homepage"]),
+                                           is_deep(rows[i]["_url"]), i))
         row = rows[best]
         for i in members:
             if i == best:
@@ -295,6 +316,8 @@ def crm_matches(c: dict, known: dict[str, Company], by_name: dict[str, list[Comp
 def crm_row(market: Market, c: dict, crm: list[Company] = ()) -> dict:
     ct = merged_contact(c)
     ct["phone"] = us_phone(ct["phone"])
+    if ct["city"].isupper() or ct["city"].islower():   # 'BENTON', 'cincinnati'
+        ct["city"] = ct["city"].title()
     url = role_url(c)
     return {
         "Company": display_name(c),

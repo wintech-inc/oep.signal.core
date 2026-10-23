@@ -1,23 +1,23 @@
 # CRM export: Poultry Houses (`pac_poultry_houses`)
 
-**223 companies** in `exports/crm_pac_poultry_houses.csv`, 192 of them in lead roles (Manufacturer, Component Reseller, Supply Reseller).
+**221 companies** in `exports/crm_pac_poultry_houses.csv`, 190 of them in lead roles (Manufacturer, Component Reseller, Supply Reseller).
 
 | Role | Companies |
 |---|---|
-| Manufacturer | 110 |
+| Manufacturer | 109 |
 | Component Manufacturer | 15 |
 | Component Reseller | 6 |
 | Reseller | 1 |
-| Supply Reseller | 76 |
+| Supply Reseller | 75 |
 | Adjacent | 15 |
 
 ## Contact fields filled
 
 | Street address | City | State | ZIP | Phone |
 |---|---|---|---|---|
-| 186 (83%) | 188 (84%) | 188 (84%) | 186 (83%) | 209 (94%) |
+| 184 (83%) | 186 (84%) | 186 (84%) | 184 (83%) | 207 (94%) |
 
-Filled from the company's own website or a web search where the map listing had none: 31 phone numbers, 43 addresses. Blank means neither showed it; nothing is guessed. Spot-check sheet: `eval/review_contacts_pac_poultry_houses.csv`.
+Filled from the company's own website or a web search where the map listing had none: 31 phone numbers, 42 addresses. Blank means neither showed it; nothing is guessed. Spot-check sheet: `eval/review_contacts_pac_poultry_houses.csv`.
 
 ## Not exported
 
@@ -49,6 +49,7 @@ Filled from the company's own website or a web search where the map listing had 
 - Michiana Equipment LLC (https://michianaequipment.com/) kept; Michiana Equipment LLC (https://www.buildpro.org/resources/michiana-equipment-llc/) dropped
 - H3co (https://h3co.com/) kept; H3co (https://hostetlergroup.com/projects/) dropped
 - Southern Ag Builders and Supply (https://southernagbuilders.com) kept; Southern Ag Builders & Supply (https://facebook.com/61576462497259) dropped
+- Heartland Builders (https://heartlandbuilders.net/) kept; Heartland Builders Co. (https://facebook.com/HeartlandBuildersCo) dropped
 - Settje Agri-Services and Engineering (https://settje.com/) kept; Settje Agri-Services and Engineering, Inc. (https://facebook.com/SettjeAgriServices) dropped
 - A1Ag Services (https://a1ag.com/) kept; A1 Ag Services (https://facebook.com/a1agservices) dropped
 - The Mobile Chicken House (https://mobilechickenhouse.com/) kept; The Mobile Chicken House (https://instagram.com/themobilechickenhouse) dropped
@@ -63,5 +64,6 @@ Filled from the company's own website or a web search where the map listing had 
 - Bunting & Bertrand Inc (https://www.buntingandbertrand.com/) kept; Bunting & Bertrand Inc. (https://www.morningagclips.com/bunting-bertrand-inc-delawares-premiere-poultry-equipment-provider-for-50-years/) dropped
 - Facco USA Inc. (https://www.facco.net/en/world/nordamerica/usa) kept; Facco USA Inc. (https://www.townvue.com/Business/Details/facco-usa-inc-01au3x17) dropped
 - Poultry Equipment Plus (https://poultryequipmentplus.com/) kept; Poultry Equipment Plus (https://facebook.com/pepmillspoultry) dropped
+- Borders Poultry Supply Inc. (https://www.borderstx.com/) kept; Borders Poultry Supply (https://facebook.com/pittsburgtxchamber) dropped
 
 This export's API and search spend: $0.00.
