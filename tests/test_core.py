@@ -5,9 +5,11 @@ import pytest
 from signal_core import markets
 from signal_core.classify import system_prompt
 from signal_core.companies import Company, clean_url, company_key, merge_rows
-from signal_core.eval import metrics, role_extras, role_metrics, sample
+from collections import Counter
+
+from signal_core.eval import ROLE_LABELS, freeze, load_labels, metrics, role_extras, role_metrics, sample
 from signal_core.evidence import MAX_QUERY_WORDS, page_text, product_search_query, search_query
-from signal_core.role import derive_role, role_prompt
+from signal_core.role import ACTIVITIES, RoleAnswer, derive_role, own_website, place, role_prompt
 
 
 @pytest.mark.parametrize("raw, expected", [
@@ -73,9 +75,32 @@ def test_product_search_query():
     assert len(query.replace(" OR ", " ").split()) <= MAX_QUERY_WORDS
 
 
-def test_derive_role():
-    assert [derive_role(a, b) for a, b in [(True, True), (True, False), (False, True), (False, False)]] == [
-        "both", "customer", "competitor", "neither"]
+def test_derive_role_by_precedence():
+    assert tuple(ACTIVITIES.values()) + ("Adjacent",) == markets.ROLES
+    assert derive_role({a: True for a in ACTIVITIES}) == "Manufacturer"
+    assert derive_role({"resells_end_product": True, "resells_supplies": True}) == "Reseller"
+    assert derive_role({"resells_supplies": True}) == "Supply Reseller"
+    assert derive_role({"resells_end_product": True, "resells_component": True}) == "Component Reseller"
+    assert derive_role({"resells_end_product": True}) == "Reseller"
+    assert derive_role({a: False for a in ACTIVITIES}) == "Adjacent"
+
+
+def test_own_website_must_be_in_the_evidence():
+    urls = {"acmeblinds.com/about", "facebook.com/acme"}
+    assert own_website("https://www.acmeblinds.com/contact", "", urls) == "https://www.acmeblinds.com"
+    assert own_website("acmeblinds.net", "Visit ACMEBLINDS.NET today", set()) == "https://acmeblinds.net"
+    assert own_website("https://made-up.com", "", urls) == ""
+    assert own_website("https://facebook.com/acme", "", urls) == ""
+    assert own_website(None, "", urls) == ""
+
+
+def test_place():
+    blank = dict.fromkeys(["name", "website", "comment"] + list(ACTIVITIES))
+    def answer(**kw):
+        return RoleAnswer.model_construct(**{**blank, "city": None, "state": None, "country": None, **kw})
+    assert place(answer(city="Cullman", state="AL", country="US")) == ("Cullman, AL", "US")
+    assert place(answer(state="Ontario", country="Canada")) == ("Ontario", "Canada")
+    assert place(answer()) == ("", "")
 
 
 def test_page_text():
@@ -101,17 +126,29 @@ def test_metrics():
 
 
 def test_role_metrics():
-    roles = ["both", "customer", "neither", "competitor", "customer"]
-    labels = {"0": "both", "1": "customer", "2": "customer", "3": "neither", "4": "customer"}
+    roles = ["Manufacturer", "Supply Reseller", "Reseller", "Component Manufacturer", "Adjacent"]
+    labels = {"0": "Manufacturer", "1": "Component Reseller", "2": "Manufacturer", "3": "Component Manufacturer",
+              "4": "Reseller"}
     results = [{"company_id": str(i), "role": r, "role_input_tokens": 0, "role_output_tokens": 0} for i, r in enumerate(roles)]
     m = role_metrics(results, labels)
-    assert (m["customer_recall"], m["customer_precision"]) == (3 / 4, 1.0)
-    assert (m["competitor_recall"], m["competitor_precision"]) == (1.0, 1 / 2)
-    assert m["accuracy"] == 3 / 5
+    assert (m["lead_recall"], m["lead_precision"]) == (2 / 3, 1.0)
+    assert m["accuracy"] == 2 / 5
 
 
-def test_role_extras_skip_reference_and_examples():
+def test_role_extras_top_up_rare_roles_and_skip_reference_and_examples():
     market = markets.load_market("pac_poultry_houses")
-    results = [{"company_id": i, "role": r} for i, r in
-               [("a.com", "competitor"), ("b.com", "both"), ("c.com", "customer"), ("plyco.com", "competitor")]]
-    assert [r["company_id"] for r in role_extras(results, market, exclude={"a.com"})] == ["b.com"]
+    found = [{"company_id": f"r{i}.com", "role": "Reseller"} for i in range(5)]
+    found += [{"company_id": f"m{i}.com", "role": "Manufacturer"} for i in range(5)]
+    found += [{"company_id": "plyco.com", "role": "Component Manufacturer"}, {"company_id": "x.com", "role": "Component Manufacturer"}]
+    rows = role_extras(found, market, exclude={"r0.com"}, have=Counter({"Manufacturer": 10, "Reseller": 7}), n=10)
+    ids = [r["company_id"] for r in rows]
+    assert not any(i.startswith("m") for i in ids) and "plyco.com" not in ids and "r0.com" not in ids
+    assert sum(i.startswith("r") for i in ids) == 3 and "x.com" in ids
+
+
+def test_freeze_accepts_any_letter_case(tmp_path):
+    sheet = tmp_path / "sheet.csv"
+    sheet.write_text("company_id,name,label,note\na.com,A,supply reseller,\nb.com,B,SKIP,\nc.com,C,Manufacturer,ok\n")
+    reference = tmp_path / "ref.json"
+    assert freeze("m", sheet, ROLE_LABELS, reference) == 2
+    assert [(l["company_id"], l["label"]) for l in load_labels(reference)] == [("a.com", "Supply Reseller"), ("c.com", "Manufacturer")]

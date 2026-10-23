@@ -19,24 +19,28 @@
   signal review --discovered --market pac_hunting_blinds
   signal freeze --discovered --market pac_hunting_blinds
   signal eval --discovered --market pac_hunting_blinds
+  signal export --market pac_poultry_houses pac_hunting_blinds
+  signal eval --contacts --market pac_poultry_houses
 """
 
 import argparse
 import asyncio
 import csv
 import json
+from collections import Counter
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 from signal_core import discover as dc
 from signal_core import eval as ev
+from signal_core import export as xp
 from signal_core.classify import Classifier, cost_per_1000
 from signal_core.companies import (
     Company, clean_url, company_key, find_company, load_companies, sanitize, write_companies,
 )
-from signal_core.markets import ROOT, load_market, market_ids, write_schema
-from signal_core.role import ROLE_FIELDS, RoleClassifier, role_cost_per_1000
+from signal_core.markets import ROLES, ROOT, load_market, market_ids, write_schema
+from signal_core.role import ROLE_FIELDS, RoleClassifier, role_cost_per_1000, role_version
 
 
 def cmd_sanitize(args):
@@ -101,34 +105,45 @@ def cmd_role(args):
     results = asyncio.run(_two_stage(_companies(args), market))
     if args.all:
         path = _write_roles(market, results)
-        roles = {v: sum(r["role"] == v for r in results) for v in (*ev.ROLES, "error")}
+        roles = {v: sum(r["role"] == v for r in results) for v in (*ROLES, "error")}
         print(f"{roles}; stage 2 about ${role_cost_per_1000(results):.2f} per 1,000. Written to {path.relative_to(ROOT)}")
     else:
         for r in results:
             print(json.dumps(r, indent=2))
 
 
-async def _review_roles(companies, market, reference_ids):
-    """Both stages over the whole list; stage 2 also for reference companies stage 1 didn't call in."""
-    async with RoleClassifier() as classifier:
-        results = await classifier.run_many(classifier.two_stage, companies, market)
-        by_id = {r["company_id"]: r for r in results}
-        redo = [c for c in companies if c.id in reference_ids and by_id[c.id]["role"] is None]
-        for r in await classifier.run_many(classifier.role, redo, market):
-            by_id[r["company_id"]] = {**by_id[r["company_id"]], **r}
-    return [by_id[c.id] for c in companies]
+def _role_companies(market_id: str, ids) -> list[Company]:
+    """Companies by id: from the seed list, else from the market's discovery run."""
+    known = {c.id: c for c in load_companies()}
+    found = (dc.load_state(market_id) or {"candidates": {}})["candidates"]
+    companies = []
+    for i in ids:
+        if i in known:
+            companies.append(known[i])
+        elif i in found:
+            companies.append(Company(id=i, name=found[i]["name"], url=found[i]["url"]))
+        else:
+            raise SystemExit(f"{i} is neither on the seed list nor in the discovery run for {market_id}")
+    return companies
 
 
 def cmd_review_roles(args):
-    companies = load_companies()
+    """The role reference set with stage 2's current answers, plus discovered companies for the roles it has few of."""
     for market_id in args.market:
         market = load_market(market_id)
-        reference_ids = [l["company_id"] for l in ev.load_labels() if l["market_id"] == market.id and l["label"] == "in"]
-        results = asyncio.run(_review_roles(companies, market, set(reference_ids)))
-        _write_roles(market, results)
-        by_id = {r["company_id"]: r for r in results}
-        rows = [{**by_id[i], "source": "reference"} for i in reference_ids]
-        rows += [{**r, "source": "screen"} for r in ev.role_extras(results, market, set(reference_ids))]
+        previous = {l["company_id"]: l["label"] for l in ev.load_labels(ev.ROLE_REFERENCE_PATH) if l["market_id"] == market.id}
+        state = dc.load_state(market.id)
+        if not previous or not state:
+            raise SystemExit(f"{market.id} needs a role reference set and a discovery run")
+        version = role_version(market.id)
+        found = [c for c in state["candidates"].values() if c.get("verdict") == "in" and c.get("role_version") == version]
+        if not found:
+            raise SystemExit(f"No discovered company has a role from the current stage-2 prompt. Run: signal export --market {market.id}")
+        results = asyncio.run(_roles(_role_companies(market.id, previous), market))
+        rows = [{**r, "name": r.get("company_name") or r["name"], "source": "reference",
+                 "previous_label": previous[r["company_id"]]} for r in results]
+        extras = ev.role_extras(found, market, set(previous), Counter(r["role"] for r in results))
+        rows += [{**c, "name": dc.display_name(c), "source": "discovery"} for c in extras]
         path = ev.role_sheet_path(market.id)
         ev.write_role_sheet(path, rows)
         print(f"{len(rows)} rows written to {path.relative_to(ROOT)}. Fill in 'label' ({', '.join(ev.ROLE_LABELS)}), "
@@ -186,8 +201,7 @@ def cmd_eval_roles(args):
     labels = {l["company_id"]: l for l in ev.load_labels(ev.ROLE_REFERENCE_PATH) if l["market_id"] == market.id}
     if not labels:
         raise SystemExit(f"No role labels for {market.id}. Run: signal review --roles --market {market.id}, then signal freeze --roles")
-    by_id = {c.id: c for c in load_companies()}
-    results = asyncio.run(_roles([by_id[i] for i in labels], market))
+    results = asyncio.run(_roles(_role_companies(market.id, labels), market))
     text = ev.role_report(market, results, labels)
     path = ev.EVAL_DIR / f"results_roles_{market.id}.md"
     path.write_text(text)
@@ -195,9 +209,24 @@ def cmd_eval_roles(args):
     print(f"Written to {path.relative_to(ROOT)}")
 
 
+def cmd_eval_contacts(args):
+    """The contact spot check, from the sheet `signal export` wrote and Tim filled in."""
+    market = load_market(args.market)
+    path = Path(args.sheet) if args.sheet else ev.EVAL_DIR / f"review_contacts_{market.id}.csv"
+    if not path.exists():
+        raise SystemExit(f"{path} not found. Run: signal export --market {market.id}")
+    text = ev.contact_report(market, path)
+    out = ev.EVAL_DIR / f"results_contacts_{market.id}.md"
+    out.write_text(text)
+    print(text)
+    print(f"Written to {out.relative_to(ROOT)}")
+
+
 def cmd_eval(args):
     if args.roles:
         return cmd_eval_roles(args)
+    if args.contacts:
+        return cmd_eval_contacts(args)
     if args.discovered:
         return cmd_eval_discovered(args)
     market = load_market(args.market)
@@ -294,6 +323,15 @@ def cmd_probe(args):
     print(f"Written: {path.relative_to(ROOT)}, " + ", ".join(str(p.relative_to(ROOT)) for p in paths))
 
 
+def cmd_export(args):
+    for market_id in args.market:
+        market = load_market(market_id)
+        result = asyncio.run(xp.export(market, args.max_cost))
+        paths = list(result["paths"].values()) + _write_discovery_outputs(market, False)
+        print(result["paths"]["report"].read_text())
+        print("Written: " + ", ".join(dict.fromkeys(str(p.relative_to(ROOT)) for p in paths)))
+
+
 def cmd_schema(args):
     path = write_schema()
     for market_id in market_ids():
@@ -317,7 +355,7 @@ def main():
     p.add_argument("--all", action="store_true", help="Screen every company; writes eval/screen_<market>.csv")
     p.set_defaults(func=cmd_classify)
 
-    p = sub.add_parser("role", help="Both stages: market screen, then customer/competitor role for companies in it")
+    p = sub.add_parser("role", help="Both stages: market screen, then the role of companies in the market")
     p.add_argument("urls", nargs="*")
     p.add_argument("--market", required=True)
     p.add_argument("--all", action="store_true", help="Every company; writes eval/roles_<market>.csv")
@@ -341,6 +379,8 @@ def main():
     p.add_argument("--market", required=True)
     p.add_argument("--roles", action="store_true", help="Measure stage 2 against data/reference_roles.json")
     p.add_argument("--discovered", action="store_true", help="Spot-check precision on discovered companies")
+    p.add_argument("--contacts", action="store_true", help="Contact spot check from eval/review_contacts_<market>.csv")
+    p.add_argument("--sheet", help="With --contacts: the filled spot-check sheet (default eval/review_contacts_<market>.csv)")
     p.set_defaults(func=cmd_eval)
 
     p = sub.add_parser("queries", help="Write the first markets/<market>.discovery.json from the brief")
@@ -357,7 +397,8 @@ def main():
     p.add_argument("--max-cost", type=float, default=dc.MAX_COST, help="Stop starting new work at this estimated spend (USD)")
     p.add_argument("--reclassify", action="store_true", help="Ignore stored verdicts and classify again")
     p.add_argument("--recheck", action="store_true",
-                   help="Classify in-market companies again under the current prompts (after a prompt change); with --rounds 0, nothing else")
+                   help="Classify in-market companies again under the current stage-1 prompt (after a change to it); with "
+                        "--rounds 0, nothing else. Roles from an older stage-2 prompt are redone on every run anyway")
     p.set_defaults(func=cmd_discover)
 
     p = sub.add_parser("report", help="Rewrite discovery reports and leads sheets from data/discovery/ (no searching)")
@@ -370,6 +411,11 @@ def main():
     p.add_argument("--max-cost", type=float, default=5.0)
     p.add_argument("--seed", type=int, help="Random seed for the states searched (default: random)")
     p.set_defaults(func=cmd_probe)
+
+    p = sub.add_parser("export", help="CRM import file: roles and map lookups for in-market companies -> exports/crm_<market>.csv")
+    p.add_argument("--market", required=True, nargs="+")
+    p.add_argument("--max-cost", type=float, default=xp.MAX_COST, help="Stop starting new work at this estimated spend per market (USD)")
+    p.set_defaults(func=cmd_export)
 
     p = sub.add_parser("schema", help="Regenerate markets/schema.json and validate every brief")
     p.set_defaults(func=cmd_schema)

@@ -50,9 +50,11 @@ A company can do several of these things. Hog Slat builds poultry houses, distri
 1. Manufacturer
 2. Component Manufacturer
 3. Component Reseller
-4. Supply Reseller
-5. Reseller
+4. Reseller
+5. Supply Reseller
 6. Adjacent (none of the above)
+
+(Tim, 2026-10-22, after the first export: Reseller now comes before Supply Reseller. In hunting blinds, about 270 gun shops, feed stores, and shed lots that resell finished blinds plus stands and accessories were landing in the lead role Supply Reseller; they are dealers, and his M2 call was that dealers aren't leads. Poultry is unaffected.)
 
 Making the end product comes first because it makes the company a customer however else it is involved. The Comments column names the other activities ("also makes and sells its own tunnel doors"), and the internal sheet keeps every activity flag (section 3), so nothing is lost.
 
@@ -155,6 +157,14 @@ M1's and M2's rules apply unchanged. In addition:
 - **Blank beats wrong.** Missing address or phone stays blank.
 
 ## 7. Evaluation
+
+**Changed by Tim on 2026-10-22, after the first real export:** Tim does not relabel the role reference set or check the contact spot sample. The judges are the sales and marketing team, who call these companies and can say whether a role or a phone number is right. Feedback from sales replaces the targets below for M4. The tooling stays (`signal review|freeze|eval --roles`, `signal eval --contacts`, and the sheets in `eval/review_roles_*` and `eval/review_contacts_*`) for when feedback arrives. Until then `data/reference_roles.json` still holds M2's customer/competitor labels, so `signal eval --roles` doesn't mean anything yet.
+
+The first export (both markets, $2.07): poultry 252 companies, 229 in lead roles, phone filled for 81% and street address for 61%; hunting blinds 947, 805 in lead roles, phone 73% and street address 34%. See `eval/export_<market>.md`.
+
+A review of that export before the real upload (`/mnt/project-files/m4/export_review.md` in the project files) found: blind dealers in a lead role (fixed by the role order above); dealers of a brand called makers; about 140 homepages that weren't the company's own site (directory pages, or a wrongly matched map listing's site); contacts from same-named businesses in other states; foreign companies with no US address to gate on; phones missing where the website shows one; social pages duplicating a website row. The fixes, all general: stage 2 also returns the company's own website (kept only if it appears in the evidence) and where it is based, and a sentence that selling another company's brand is reselling; the export looks the company up in stage 2's town, rejects a listing in another state or with another company's website, gates on stage 2's country and on non-US phone codes and addresses, reads a missing phone or address from the company's own homepage and contact page (one web search for social-only companies), drops pages stage 2 can't tie to a named company, and merges a social page whose handle is a row's domain.
+
+The plan as agreed before that change:
 
 **Role reference set.** The M2 reference set (100 companies, Tim-labeled) is relabeled with the new roles, plus up to 10 companies per market for each role the set lacks (likely Reseller, Supply Reseller, and Component Reseller), sampled from the discovery list where the new stage 2 gives that role, to test precision. `signal review --roles` writes the sheet with the model's role and comment; Tim confirms or corrects on the review page as in M2. About 120 to 140 rows per market, mostly quick confirmations. `signal freeze --roles` replaces `data/reference_roles.json`.
 

@@ -58,9 +58,12 @@
           "anyOf": [
             {
               "enum": [
-                "customer",
-                "competitor",
-                "both"
+                "Manufacturer",
+                "Component Manufacturer",
+                "Component Reseller",
+                "Reseller",
+                "Supply Reseller",
+                "Adjacent"
               ],
               "type": "string"
             },
@@ -69,7 +72,7 @@
             }
           ],
           "default": null,
-          "description": "Its role to the supplier, shown as an example to the role classifier (M2).",
+          "description": "Its role in the market, shown as an example to the role classifier (M4).",
           "title": "Role"
         }
       },
@@ -207,8 +210,21 @@
         }
       ],
       "default": null,
-      "description": "The CRM's market name for this brief (eval only).",
+      "description": "The CRM's market name for this brief: the Division column of the CRM export.",
       "title": "Crm Market"
+    },
+    "crm_target": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The company initiating the search: the Target column of the CRM export (e.g. 'PAC').",
+      "title": "Crm Target"
     },
     "end_product": {
       "$ref": "#/$defs/EndProduct"
@@ -224,7 +240,7 @@
       "type": "array"
     },
     "role_notes": {
-      "description": "Market-specific clarifications for the role classifier (M2), one sentence each.",
+      "description": "Market-specific clarifications for the role classifier, one sentence each.",
       "items": {
         "type": "string"
       },

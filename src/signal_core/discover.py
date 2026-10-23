@@ -1,5 +1,5 @@
 """Company discovery (M3): find the companies in a market from every source, classify each new one with
-both stages (M1, then M2, unchanged), and keep going while new rounds still find new in-market companies.
+both stages (M1 unchanged, then the M4 role), and keep going while new rounds still find new in-market companies.
 
 A lead is a company name with an optional URL and location, plus where it was found. A candidate is a
 lead with a website, keyed by company_key(url) as in M1. The market list (every candidate, its verdicts,
@@ -28,8 +28,8 @@ from pydantic import BaseModel
 from signal_core.classify import EFFORT, MODEL, PRICE_IN, PRICE_OUT, PRICE_SEARCH, _bullets, system_prompt
 from signal_core.companies import Company, bare_host, clean_url, company_key, is_social, load_companies
 from signal_core.evidence import LIST_CHUNK_CHARS, LIST_CHUNKS, cache_get, cache_put, root_url
-from signal_core.markets import MARKETS_DIR, ROOT, Market, load_market
-from signal_core.role import ROLE_FIELDS, RoleClassifier, role_prompt
+from signal_core.markets import MARKETS_DIR, ROLES, ROOT, Market, load_market
+from signal_core.role import ACTIVITIES, ROLE_FIELDS, RoleClassifier, role_version
 
 PROMPTS = ROOT / "prompts"
 DISCOVERY_DIR = ROOT / "data" / "discovery"
@@ -49,6 +49,8 @@ PROBE_QUERIES = 12
 PROBE_PAGES = 3
 SERPER_REFUSALS = 25    # Serper client errors in a row that stop the run
 VERDICT_FIELDS = ["verdict", "rule", "reason", "evidence_url", *ROLE_FIELDS]
+# M2's role fields, dropped from a company when it gets an M4 role.
+OLD_ROLE_FIELDS = ["role_reason", "customer", "customer_evidence_url", "competitor", "competitor_evidence_url"]
 # Paths on social sites that are not a company's page.
 SOCIAL_NON_PAGES = {"groups", "events", "watch", "marketplace", "share", "sharer", "sharer.php", "hashtag", "reel",
                     "reels", "p", "explore", "stories", "photo", "photo.php", "story.php", "permalink.php",
@@ -280,6 +282,22 @@ def sources_of(candidate: dict) -> set[str]:
     return {f["source"] for f in candidate["found_by"]}
 
 
+def same_place(place: dict, company_id: str, names: list[str]) -> bool:
+    """A map listing is the company's when its website is the company's, or the names contain one another."""
+    site = lead_url(place.get("website"))
+    if site and company_key(site) == company_id:
+        return True
+    a = norm_name(place["title"])
+    return any(a and b and (a in b or b in a) for b in map(norm_name, names))
+
+
+def store(candidate: dict, result: dict) -> None:
+    """Keep a classification's verdict and role fields on a candidate (dropping M2's role fields)."""
+    for k in OLD_ROLE_FIELDS:
+        candidate.pop(k, None)
+    candidate.update({k: v for k, v in result.items() if k in VERDICT_FIELDS})
+
+
 def is_maps(found: dict) -> bool:
     return found["source"] == "maps" or found["detail"].startswith("maps:")
 
@@ -315,7 +333,9 @@ class Discovery:
         self.candidates: dict[str, dict] = self.state["candidates"]
         self.names = {norm_name(c["name"]): k for k, c in self.candidates.items() if norm_name(c["name"])}
         self.seed_keys = {c.id for c in load_companies()}
-        self.prompt_hash = hashlib.sha1((system_prompt(market.id) + role_prompt(market.id)).encode()).hexdigest()[:12]
+        # Each stage's results are cached by its own prompt version, so a stage-2 change re-runs stage 2 only.
+        self.screen_version = hashlib.sha1(system_prompt(market.id).encode()).hexdigest()[:12]
+        self.role_version = role_version(market.id)
         self.classifier = RoleClassifier(concurrency)
         self.fetcher = self.classifier.fetcher
         self.llm_limit = asyncio.Semaphore(concurrency)
@@ -562,37 +582,77 @@ class Discovery:
             nonlocal done
             async with self.slots:
                 if not self.over_budget():
-                    c.update({k: v for k, v in (await self.two_stage(c)).items() if k in VERDICT_FIELDS})
+                    store(c, await self.two_stage(c))
             done += 1
             self.progress(f"classifying {done}/{len(pending)}")
 
         await asyncio.gather(*(one(c) for c in pending))
 
-    def gate(self, c: dict) -> bool:
-        """The brief's hard geography: a company known to be based outside it is out, and is never classified."""
-        why = outside_geography(c, self.home, self.countries)
+    def gate(self, c: dict, why: str | None = None) -> bool:
+        """The brief's hard geography: a company known to be based outside it is out, and is never classified.
+        `why` gives a reason found elsewhere (the CRM export's map listing or website)."""
+        why = why or outside_geography(c, self.home, self.countries)
         if why:
             c.update({k: None for k in VERDICT_FIELDS})
             c.update(verdict="out", reason=f"Not classified: based outside the market's geography ({why}).")
         return bool(why)
 
-    async def two_stage(self, c: dict) -> dict:
-        """Both stages, unchanged. Results are cached by prompt version, so the blind run and re-runs reuse them."""
-        key = f"{self.market.id}|{self.prompt_hash}|{c['url']}"
-        if not self.reclassify and (cached := cache_get("verdicts", key)):
-            return cached
-        r = await self.classifier.two_stage(Company(id=c["company_id"], name=c["name"], url=c["url"]), self.market)
-        self.spend["haiku_in"] += r.get("input_tokens", 0) + (r.get("role_input_tokens") or 0)
-        self.spend["haiku_out"] += r.get("output_tokens", 0) + (r.get("role_output_tokens") or 0)
-        self.spend["classified"] += 1
-        if "serper.dev" in r.get("reason", "") and "Client error" in r.get("reason", ""):
-            self.fetcher.refusals += 1
-            self.fetcher.refusal = r["reason"][:200]
-        elif r["verdict"] != "error":
+    def company(self, c: dict) -> Company:
+        return Company(id=c["company_id"], name=c["name"], url=c["url"])
+
+    def note_serper(self, error: str | None) -> None:
+        """Count classifications that failed because Serper refused the search, toward stopping the run."""
+        if error is None:
             self.fetcher.refusals = 0
-        if r["verdict"] != "error" and r.get("role") != "error":
-            cache_put("verdicts", key, r)
+        elif "serper.dev" in error and "Client error" in error:
+            self.fetcher.refusals += 1
+            self.fetcher.refusal = error[:200]
+
+    async def two_stage(self, c: dict) -> dict:
+        """Stage 1 (M1, unchanged), then the role for companies in the market. Each stage is cached by its own
+        prompt version, so the blind run and re-runs reuse them."""
+        key = f"{self.market.id}|{self.screen_version}|{c['url']}"
+        stage1 = None if self.reclassify else cache_get("verdicts", key)
+        if not stage1:
+            stage1 = await self.classifier.classify(self.company(c), self.market)
+            self.spend["haiku_in"] += stage1.get("input_tokens", 0)
+            self.spend["haiku_out"] += stage1.get("output_tokens", 0)
+            self.spend["classified"] += 1
+            self.note_serper(stage1["reason"] if stage1["verdict"] == "error" else None)
+            if stage1["verdict"] != "error":
+                cache_put("verdicts", key, stage1)
+        if stage1["verdict"] != "in":
+            return {**stage1, **dict.fromkeys(ROLE_FIELDS)}
+        return {**stage1, **await self.role(c)}
+
+    async def role(self, c: dict) -> dict:
+        """Stage 2 for one in-market company, cached by the stage-2 prompt version."""
+        key = f"{self.market.id}|{self.role_version}|{c['url']}"
+        if not self.reclassify and (cached := cache_get("roles", key)):
+            return cached
+        r = await self.classifier.role(self.company(c), self.market)
+        self.spend["haiku_in"] += r.get("role_input_tokens", 0)
+        self.spend["haiku_out"] += r.get("role_output_tokens", 0)
+        self.spend["roles"] += 1
+        self.note_serper(r["comment"] if r["role"] == "error" else None)
+        if r["role"] != "error":
+            cache_put("roles", key, r)
         return r
+
+    async def refresh_roles(self) -> None:
+        """Stage 2 for in-market companies whose role is missing, failed, or from an older stage-2 prompt."""
+        todo = [c for c in self.in_market() if c.get("role_version") != self.role_version]
+        done = 0
+
+        async def one(c):
+            nonlocal done
+            async with self.slots:
+                if not self.over_budget():
+                    store(c, await self.role(c))
+            done += 1
+            self.progress(f"roles {done}/{len(todo)}")
+
+        await asyncio.gather(*(one(c) for c in todo))
 
     async def locate(self) -> None:
         """One map lookup by name for each in-market company without a known town. One found outside
@@ -610,9 +670,7 @@ class Discovery:
                     return
             c["located"] = True
             for p in places:
-                same_site = p["website"] and lead_url(p["website"]) and company_key(lead_url(p["website"])) == c["company_id"]
-                a, b = norm_name(p["title"]), norm_name(c["name"])
-                if same_site or (a and b and (a in b or b in a)):
+                if same_place(p, c["company_id"], [c["name"]]):
                     c["location"] = parse_town(p["address"])
                     return
 
@@ -690,8 +748,10 @@ class Discovery:
         return sum(1 for c in self.candidates.values() if c.get("verdict") in (None, "error"))
 
     async def settle_round(self) -> None:
-        """Classify everything not yet classified, locate new in-market companies, and settle the paging rule."""
+        """Classify everything not yet classified, bring in-market companies' roles up to date, locate new
+        in-market companies, and settle the paging rule."""
         await self.classify_pending()
+        await self.refresh_roles()
         await self.locate()
         for q in self.state["queries"].values():
             if not q["settled"]:
@@ -722,6 +782,7 @@ class Discovery:
         self.state["runs"].append({
             "command": command, "sources": sorted(self.sources), "rounds": self.state["round"],
             "searches": self.fetcher.searches, "llm_calls": self.spend["llm_calls"], "classified": self.spend["classified"],
+            "roles": self.spend["roles"],
             "llm_errors": self.spend["llm_errors"], "search_errors": self.spend["search_errors"],
             "job_errors": self.spend["job_errors"],
             "cost": round(self.cost(), 2), "minutes": round((time.time() - self.started) / 60, 1),
@@ -806,20 +867,45 @@ async def write_queries(market: Market) -> QueryFile:
 
 # Outputs: leads sheet and report
 
-LEAD_COLUMNS = ["company_id", "name", "url", "location", "role", "rule", "reason", "evidence_url", "role_reason",
-                "customer_evidence_url", "competitor_evidence_url", "sources", "found_by", "round", "seed"]
+CONTACT_FIELDS = ["street", "city", "state", "zip", "phone", "website", "maps_url"]
+LEAD_COLUMNS = ["company_id", "name", "url", "location", "role", "comment",
+                *[f for a in ACTIVITIES for f in (a, f"{a}_url")], "weak_evidence", "rule", "reason", "evidence_url",
+                *CONTACT_FIELDS, "from_site", "sources", "found_by", "round", "seed"]
+
+
+def merged_contact(c: dict) -> dict:
+    """The CRM export's contact fields: the map listing's, with a blank phone, or a missing street address,
+    filled from the company's own website (`site_contact`). `from_site` names what the website filled."""
+    out = {k: (c.get("contact") or {}).get(k) or "" for k in CONTACT_FIELDS}
+    site = c.get("site_contact") or {}
+    filled = []
+    if not out["phone"] and site.get("phone"):
+        out["phone"] = site["phone"]
+        filled.append("phone")
+    if not out["street"] and site.get("street") and site.get("city") and site.get("state"):
+        out.update({k: site.get(k) or "" for k in ("street", "city", "state", "zip")})
+        filled.append("address")
+    return {**out, "from_site": ", ".join(filled)}
+
+
+def display_name(c: dict) -> str:
+    """Stage 2's proper name, else the name discovery found (a social page's handle if that reads like a post)."""
+    return c.get("company_name") or (social_name(c["name"], c["url"]) if is_social(c["url"]) else c["name"])
 
 
 def write_leads(market_id: str, state: dict) -> Path:
+    """The internal sheet: every in-market company with its role, every activity and evidence URL, its map
+    listing's contact fields, and how it was found."""
     path = EVAL_DIR / f"leads_{market_id}.csv"
+    order = {r: i for i, r in enumerate(ROLES)}
     rows = sorted((c for c in state["candidates"].values() if c.get("verdict") == "in"),
-                  key=lambda c: (state_of(c.get("location")) or "~", c["name"].lower()))
+                  key=lambda c: (order.get(c.get("role"), len(order)), state_of(c.get("location")) or "~",
+                                 display_name(c).lower()))
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=LEAD_COLUMNS, extrasaction="ignore")
         writer.writeheader()
         for c in rows:
-            name = social_name(c["name"], c["url"]) if is_social(c["url"]) else c["name"]
-            writer.writerow({**c, "name": name,
+            writer.writerow({**c, **merged_contact(c), "name": display_name(c),
                              "sources": ", ".join(sorted(sources_of(c))),
                              "found_by": "; ".join(f["detail"] for f in c["found_by"][:3])})
     return path
@@ -840,6 +926,7 @@ def report(market: Market, state: dict) -> str:
     cands = state["candidates"]
     ins = [c for c in cands.values() if c.get("verdict") == "in"]
     roles = Counter(c.get("role") for c in ins)
+    stale = sum(1 for c in ins if c.get("role_version") != role_version(market.id) and c.get("role") != "error")
     seed_in = seed_in_ids(market.id)
     run = state["runs"][-1] if state["runs"] else {}
     last = state["rounds"][-1] if state["rounds"] else {}
@@ -858,9 +945,9 @@ def report(market: Market, state: dict) -> str:
     discovered = [c for c in ins if not c["seed"]]
     lines += [
         "## Headline", "",
-        f"**{len(ins)} in-market companies**: {roles['customer']} customer, {roles['both']} both, "
-        f"{roles['competitor']} competitor, {roles['neither']} neither"
-        + (f", {roles['error']} role errors" if roles["error"] else "") + ".",
+        f"**{len(ins)} in-market companies**: " + ", ".join(f"{roles[r]} {r}" for r in ROLES)
+        + (f", {roles['error']} role errors" if roles["error"] else "")
+        + (f", {stale} without a role from the current stage-2 prompt (run `signal export`)" if stale else "") + ".",
         "",
         f"That is **{len(ins) / len(seed_in):.1f}x** the {len(seed_in)} in-market companies on the seed list. "
         f"{len(discovered)} of them are not on the seed list at all." if seed_in else "",
@@ -901,15 +988,15 @@ def report(market: Market, state: dict) -> str:
 
     by_source = {s: [c for c in cands.values() if s in sources_of(c)] for s in (*SOURCES, "probe")}
     lines += ["## By source", "",
-              "| Source | Candidates | In market | Customer | Both | Competitor | Neither | Only this source |",
-              "|---|---|---|---|---|---|---|---|"]
+              "| Source | Candidates | In market | " + " | ".join(ROLES) + " | Only this source |",
+              "|---|---|---|" + "---|" * len(ROLES) + "---|"]
     for s, cs in by_source.items():
         if not cs:
             continue
         cin = [c for c in cs if c.get("verdict") == "in"]
         r = Counter(c.get("role") for c in cin)
         only = sum(1 for c in cin if sources_of(c) == {s})
-        lines.append(f"| {s} | {len(cs)} | {len(cin)} | {r['customer']} | {r['both']} | {r['competitor']} | {r['neither']} | {only} |")
+        lines.append(f"| {s} | {len(cs)} | {len(cin)} | " + " | ".join(str(r[role]) for role in ROLES) + f" | {only} |")
     lines.append("")
 
     lines += ["## Rounds (saturation curve)", "",

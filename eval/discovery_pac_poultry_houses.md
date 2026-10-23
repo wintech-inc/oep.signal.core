@@ -2,32 +2,32 @@
 
 ## Headline
 
-**279 in-market companies**: 221 customer, 23 both, 9 competitor, 26 neither.
+**265 in-market companies**: 124 Manufacturer, 15 Component Manufacturer, 10 Component Reseller, 1 Reseller, 94 Supply Reseller, 21 Adjacent.
 
-That is **4.7x** the 59 in-market companies on the seed list. 220 of them are not on the seed list at all.
+That is **4.6x** the 58 in-market companies on the seed list. 207 of them are not on the seed list at all.
 
 ## By source
 
-| Source | Candidates | In market | Customer | Both | Competitor | Neither | Only this source |
-|---|---|---|---|---|---|---|---|
-| seed | 919 | 64 | 49 | 13 | 2 | 0 | 2 |
-| model | 21 | 3 | 2 | 1 | 0 | 0 | 0 |
-| web | 5151 | 189 | 148 | 21 | 8 | 12 | 42 |
-| maps | 5779 | 104 | 78 | 18 | 3 | 5 | 2 |
-| lists | 2723 | 97 | 68 | 18 | 3 | 8 | 18 |
-| nearby | 3834 | 177 | 148 | 17 | 1 | 11 | 26 |
-| snowball | 1168 | 45 | 24 | 11 | 6 | 4 | 8 |
-| probe | 381 | 25 | 19 | 5 | 0 | 1 | 3 |
+| Source | Candidates | In market | Manufacturer | Component Manufacturer | Component Reseller | Reseller | Supply Reseller | Adjacent | Only this source |
+|---|---|---|---|---|---|---|---|---|---|
+| seed | 919 | 63 | 45 | 5 | 5 | 0 | 7 | 1 | 2 |
+| model | 21 | 3 | 1 | 1 | 0 | 0 | 1 | 0 | 0 |
+| web | 5151 | 180 | 100 | 14 | 7 | 1 | 45 | 13 | 37 |
+| maps | 5779 | 103 | 52 | 8 | 6 | 0 | 35 | 2 | 2 |
+| lists | 2723 | 94 | 37 | 7 | 6 | 0 | 41 | 3 | 18 |
+| nearby | 3834 | 173 | 88 | 4 | 8 | 0 | 66 | 7 | 25 |
+| snowball | 1168 | 40 | 9 | 10 | 7 | 0 | 12 | 2 | 6 |
+| probe | 381 | 24 | 16 | 2 | 2 | 0 | 1 | 3 | 3 |
 
 ## Rounds (saturation curve)
 
 | Round | Queries run | Snowballed | Leads | New candidates | New in market | % of list | Cost | Minutes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 2736 | 0 | 28607 | 10344 | 197 | 100% | $7.42 | 27 |
+| 1 | 2736 | 0 | 28607 | 10344 | 191 | 100% | $7.42 | 27 |
 | 2 | 445 | 63 | 1200 | 94 | 2 | 1% | $0.09 | 5 |
-| 3 | 3036 | 306 | 30651 | 5948 | 77 | 28% | $8.08 | 15 |
+| 3 | 3036 | 306 | 30651 | 5948 | 69 | 26% | $8.08 | 15 |
 
-Last round added 28% new in-market companies (stop rule: under 2%).
+Last round added 26% new in-market companies (stop rule: under 2%).
 
 ## Paging depth
 
@@ -49,15 +49,15 @@ Towns searched with nearby queries: 163.
 
 ## Source overlap and market size
 
-- In-market companies found by two or more sources (not counting the seed list): 170 of 279 (61%).
-- Maps (map search, including nearby map searches) found 128; everything else found 266; both found 115.
-- Capture-recapture estimate of the reachable market: about 296 in-market companies (we have 279).
+- In-market companies found by two or more sources (not counting the seed list): 164 of 265 (62%).
+- Maps (map search, including nearby map searches) found 126; everything else found 252; both found 113.
+- Capture-recapture estimate of the reachable market: about 281 in-market companies (we have 265).
 
 ## By state
 
-Location known for 193 of 279 in-market companies. Candidates out without classifying because they are based outside the market's geography: 119.
+Location known for 223 of 265 in-market companies. Candidates out without classifying because they are based outside the market's geography: 133.
 
-PA 22, AR 19, GA 15, AL 12, IN 11, IA 10, MO 10, NE 10, MN 9, NC 8, CA 6, DE 6, OH 6, SD 6, TX 6, VA 5, MI 4, WI 4, MS 3, KS 2, KY 2, MD 2, NJ 2, OK 2, SC 2, AZ 1, CO 1, CT 1, FL 1, IL 1, LA 1, ND 1, NY 1, OR 1
+PA 25, AR 24, GA 18, AL 14, MO 12, NE 12, IN 11, IA 10, MN 10, NC 9, TX 8, CA 7, DE 6, OH 6, VA 6, WI 6, MI 5, NJ 4, OK 4, SD 4, MS 3, IL 2, KS 2, KY 2, MD 2, SC 2, AZ 1, CO 1, CT 1, FL 1, LA 1, ND 1, NY 1, OR 1, UT 1
 
 ## Leads dropped: no website found
 
@@ -65,7 +65,7 @@ PA 22, AR 19, GA 15, AL 12, IN 11, IA 10, MO 10, NE 10, MN 9, NC 8, CA 6, DE 6, 
 
 ## Left to do
 
-Queries with a next page due: 127. In-market companies not yet snowballed: 80. Candidates not yet classified (or errors): 0.
+Queries with a next page due: 127. In-market companies not yet snowballed: 72. Candidates not yet classified (or errors): 0.
 
 ## Runs
 
@@ -75,5 +75,8 @@ Queries with a next page due: 127. In-market companies not yet snowballed: 80. C
 | discover | lists, maps, model, nearby, seed, snowball, web | 16568 | 3591 | 10048 | $22.43 | 36.0 | budget |
 | probe | lists, maps, model, nearby, seed, snowball, web | 2767 | 31 | 2438 | $3.86 | 10.6 | no |
 | discover | lists, maps, model, nearby, seed, snowball, web | 0 | 0 | 441 | $0.41 | 1.7 | no |
+| export | lists, maps, model, nearby, seed, snowball, web | 263 | 0 | 0 | $0.43 | 1.1 | no |
+| export | lists, maps, model, nearby, seed, snowball, web | 0 | 0 | 0 | $0.00 | 0.0 | no |
+| export | lists, maps, model, nearby, seed, snowball, web | 19 | 0 | 0 | $0.20 | 0.8 | no |
 
-Total candidates: 16584. Verdicts: out 14363, unknown 1942, in 279.
+Total candidates: 16584. Verdicts: out 14377, unknown 1942, in 265.

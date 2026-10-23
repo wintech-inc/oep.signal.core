@@ -13,6 +13,10 @@ from pydantic import BaseModel, ConfigDict, Field
 ROOT = Path(__file__).resolve().parents[2]
 MARKETS_DIR = ROOT / "markets"
 SCHEMA_PATH = MARKETS_DIR / "schema.json"
+# A company's role in a market (M4), in precedence order: a company doing several of these gets the first.
+# The same in every market, so the CRM can filter on them across divisions.
+ROLES = ("Manufacturer", "Component Manufacturer", "Component Reseller", "Reseller", "Supply Reseller", "Adjacent")
+LEAD_ROLES = ("Manufacturer", "Component Reseller", "Supply Reseller")
 
 
 class Strict(BaseModel):
@@ -36,8 +40,8 @@ class Example(Strict):
     name: str
     url: str
     rule: str = Field(description="Rule(s) that make it IN: A, B, C, or a combination.")
-    role: Literal["customer", "competitor", "both"] | None = Field(
-        default=None, description="Its role to the supplier, shown as an example to the role classifier (M2).")
+    role: Literal[ROLES] | None = Field(
+        default=None, description="Its role in the market, shown as an example to the role classifier (M4).")
 
 
 class PacProduct(Strict):
@@ -61,12 +65,15 @@ class Market(Strict):
     id: str = Field(pattern=r"^[a-z0-9_]+$")
     name: str
     supplier: str
-    crm_market: str | None = Field(default=None, description="The CRM's market name for this brief (eval only).")
+    crm_market: str | None = Field(
+        default=None, description="The CRM's market name for this brief: the Division column of the CRM export.")
+    crm_target: str | None = Field(
+        default=None, description="The company initiating the search: the Target column of the CRM export (e.g. 'PAC').")
     end_product: EndProduct
     our_products: OurProducts
     notes: list[str] = Field(default_factory=list)
     role_notes: list[str] = Field(
-        default_factory=list, description="Market-specific clarifications for the role classifier (M2), one sentence each.")
+        default_factory=list, description="Market-specific clarifications for the role classifier, one sentence each.")
     examples_in: list[Example] = Field(default_factory=list)
     pac_products: list[PacProduct] = Field(default_factory=list)
     geography: Geography | None = None
