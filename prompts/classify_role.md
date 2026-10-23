@@ -42,6 +42,6 @@ The role is the first of these that applies: Manufacturer (makes the end product
 - `website`: the company's own website (its homepage URL) as the evidence shows it, else null. Not a social media page, directory, marketplace, news site, or another company's site.
 - `city`, `state`, `country`: where the company is based (its main office), as the evidence shows it, else null. For a US company, `state` is the two-letter code and `country` is "US".
 - For each activity, `yes` (true or false) and `evidence_url`: when yes, the URL from the evidence that best shows it; when no, null. Use only URLs that appear in the evidence.
-- `comment`: one or two plain sentences for a salesperson: what the company does in the {end_product.name} market, and its other activities there if it has several (for example "Also makes and sells its own tunnel doors."). Write plain words: no rule letters, field names, or talk of evidence.
+- `comment`: one or two plain sentences for a salesperson: what the company does in the {end_product.name} market, and its other activities there if it has several (for example "Also makes and sells its own tunnel doors."). Say only what it does, not what it doesn't do: mention {our_products.category} only when it makes, sells, or builds with them. If what it does is uncertain, say so in a word or two ("appears to build"). Write plain words: no rule letters or field names, and never words like "evidence", "listing", "source", or "page".
 
 Judge the company itself, not the other companies that appear in its search results.
